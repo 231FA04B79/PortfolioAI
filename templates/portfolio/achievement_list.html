@@ -1,0 +1,241 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Achievements{% endblock %}
+
+{% block dashboard_content %}
+<style>
+  /* ── Page Header ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .page-header-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header-sub {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.25rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245,158,11,0.45);
+    color: #fff;
+  }
+
+  /* ── Achievement Grid ── */
+  .ach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+
+  /* ── Achievement Card ── */
+  .ach-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 1.35rem 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .ach-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 16px 16px 0 0;
+  }
+  .ach-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+    border-color: #fde68a;
+  }
+
+  /* Card top */
+  .ach-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    justify-content: space-between;
+  }
+  .ach-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+  }
+  .ach-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fffbeb;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .ach-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.3;
+    margin: 0;
+  }
+  .ach-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+  .ach-actions a {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .ach-actions .edit-btn { color: #3b82f6; background: #eff6ff; }
+  .ach-actions .edit-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+  .ach-actions .del-btn  { color: #ef4444; background: #fef2f2; }
+  .ach-actions .del-btn:hover  { background: #fee2e2; border-color: #fca5a5; }
+
+  /* Description */
+  .ach-desc {
+    font-size: 0.83rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 0.5rem;
+    border-left: 3px solid #fde68a;
+  }
+
+  /* Rank badge (decorative) */
+  .ach-rank-badge {
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #f59e0b;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* ── Empty State ── */
+  .empty-box {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 2px dashed #e2e8f0;
+    border-radius: 20px;
+  }
+  .empty-icon {
+    width: 72px; height: 72px;
+    background: #fffbeb;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #f59e0b;
+    margin: 0 auto 1.25rem;
+  }
+  .empty-box h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+  .empty-box p  { color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+</style>
+
+<div class="container-fluid px-0">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header-title"><i class="bi bi-trophy-fill" style="color:#f59e0b;"></i> My Achievements</h1>
+      <p class="page-header-sub">List hackathons, competitions, ranks, and scholarships you have won.</p>
+    </div>
+    <a href="{% url 'achievement_create' %}" class="btn-add">
+      <i class="bi bi-plus-circle-fill"></i> Add Achievement
+    </a>
+  </div>
+
+  {% if achievements %}
+    <div class="ach-grid">
+      {% for achievement in achievements %}
+        <div class="ach-card">
+
+          <!-- Top row -->
+          <div class="ach-card-top">
+            <div class="ach-title-row">
+              <div class="ach-icon"><i class="bi bi-award-fill"></i></div>
+              <h5 class="ach-title">{{ achievement.title }}</h5>
+            </div>
+            <div class="ach-actions">
+              <a href="{% url 'achievement_edit' achievement.pk %}" class="edit-btn" title="Edit">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <a href="{% url 'achievement_delete' achievement.pk %}" class="del-btn" title="Delete">
+                <i class="bi bi-trash3-fill"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Description -->
+          {% if achievement.description %}
+            <p class="ach-desc">{{ achievement.description|truncatechars:200 }}</p>
+          {% else %}
+            <p class="ach-desc" style="color:#cbd5e1;font-style:italic;">No description provided.</p>
+          {% endif %}
+
+          <span class="ach-rank-badge"><i class="bi bi-star-fill me-1"></i> Achievement</span>
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-box">
+      <div class="empty-icon"><i class="bi bi-trophy-fill"></i></div>
+      <h3>No achievements added yet</h3>
+      <p>List competitive hackathon placements, academic scholarships, or extra-curricular awards.</p>
+      <a href="{% url 'achievement_create' %}" class="btn-add"><i class="bi bi-plus-lg"></i> Add Achievement</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

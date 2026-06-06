@@ -1,0 +1,67 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Project{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+  <div class="col-md-9">
+    <div class="card shadow-sm glass-card fade-in">
+      <div class="card-body p-4">
+        <h2 class="h4 fw-bold text-primary mb-4">{{ title }}</h2>
+        <form method="post" enctype="multipart/form-data" novalidate id="projectForm">
+          {% csrf_token %}
+          
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-dark">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text text-muted small">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          
+          <div class="pt-2">
+            <button class="btn btn-primary px-4 shadow-sm" type="submit">Save Project</button>
+            <a href="{% url 'project_list' %}" class="btn btn-secondary px-3">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            let container = document.getElementById('image-preview-container');
+            if (!container) {
+              const parent = fileInput.closest('.mb-3') || fileInput.parentNode;
+              const wrapper = document.createElement('div');
+              wrapper.id = 'image-preview-container';
+              wrapper.className = 'mt-2 text-center';
+              wrapper.innerHTML = '<label class="form-label d-block text-muted small text-start">Image Preview:</label><img id="file-preview-img" src="" class="img-thumbnail rounded" style="max-height: 180px;">';
+              parent.appendChild(wrapper);
+              container = wrapper;
+            }
+            const img = document.getElementById('file-preview-img');
+            img.src = e.target.result;
+            container.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

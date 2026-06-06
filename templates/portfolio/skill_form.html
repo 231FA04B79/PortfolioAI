@@ -1,0 +1,47 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block dashboard_content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm glass-card">
+      <div class="card-body p-4">
+        <h2 class="h4 fw-bold text-primary mb-3">{{ title }}</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+              <div class="text-danger small">{{ form.name.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">{{ form.level.label }}</label>
+            <div class="d-flex align-items-center gap-3">
+              {{ form.level }}
+              <span id="levelValue" class="badge bg-primary px-2.5 py-1.5 fs-6">{{ form.level.value|default:5 }}</span>
+            </div>
+            {% if form.level.errors %}
+              <div class="text-danger small">{{ form.level.errors }}</div>
+            {% endif %}
+          </div>
+          <button class="btn btn-primary px-4 shadow-sm" type="submit">Save Skill</button>
+          <a href="{% url 'skill_list' %}" class="btn btn-secondary px-3">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const range = document.querySelector('.form-range');
+  const valueBadge = document.getElementById('levelValue');
+  if (range && valueBadge) {
+    const update = () => { valueBadge.textContent = range.value; };
+    range.addEventListener('input', update);
+    update();
+  }
+</script>
+{% endblock %}

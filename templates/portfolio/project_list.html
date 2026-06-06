@@ -1,0 +1,310 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Projects{% endblock %}
+
+{% block dashboard_content %}
+<style>
+  /* ── Shared Page Header ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .page-header-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header-sub {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.25rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+    color: #fff;
+  }
+
+  /* ── Projects Grid ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── Project Card ── */
+  .project-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #818cf8);
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+    border-color: #d0dbf0;
+  }
+  .project-card-body {
+    padding: 1.4rem 1.5rem 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .project-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .project-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .project-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .project-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .project-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #3b82f6;
+    background: #eff6ff;
+    border-radius: 20px;
+    padding: 0.2rem 0.65rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .project-desc {
+    font-size: 0.84rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+
+  /* Tech stack chips */
+  .tech-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .tech-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* Card Footer */
+  .project-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafbfd;
+    gap: 0.5rem;
+  }
+  .btn-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #3b82f6;
+    text-decoration: none;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-github:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #2563eb;
+  }
+  .no-link {
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .card-actions {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .card-actions a {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .card-actions .edit-btn { color: #3b82f6; background: #eff6ff; }
+  .card-actions .edit-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+  .card-actions .del-btn  { color: #ef4444; background: #fef2f2; }
+  .card-actions .del-btn:hover  { background: #fee2e2; border-color: #fca5a5; }
+
+  /* ── Empty State ── */
+  .empty-box {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 2px dashed #e2e8f0;
+    border-radius: 20px;
+  }
+  .empty-icon {
+    width: 72px; height: 72px;
+    background: #eff6ff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #3b82f6;
+    margin: 0 auto 1.25rem;
+  }
+  .empty-box h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+  .empty-box p  { color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem; max-width: 380px; margin-left: auto; margin-right: auto; }
+</style>
+
+<div class="container-fluid px-0">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header-title"><i class="bi bi-code-slash"></i> My Projects</h1>
+      <p class="page-header-sub">Showcase your technical projects, tech stacks, and source links.</p>
+    </div>
+    <a href="{% url 'project_create' %}" class="btn-add">
+      <i class="bi bi-plus-circle-fill"></i> Add Project
+    </a>
+  </div>
+
+  {% if projects %}
+    <div class="projects-grid">
+      {% for project in projects %}
+        <div class="project-card">
+          <div class="project-card-body">
+
+            <!-- Title row -->
+            <div class="project-card-top">
+              <div class="project-title-row">
+                <div class="project-icon"><i class="bi bi-laptop"></i></div>
+                <h5 class="project-title" title="{{ project.title }}">{{ project.title }}</h5>
+              </div>
+              <span class="project-badge">Project</span>
+            </div>
+
+            <!-- Description -->
+            {% if project.description %}
+              <p class="project-desc">{{ project.description|truncatechars:160 }}</p>
+            {% endif %}
+
+            <!-- Tech stack chips -->
+            {% if project.tech_stack %}
+              <div>
+                <div style="font-size:0.72rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;">Tech Stack</div>
+                <div class="tech-chips">
+                  {% for tech in project.tech_stack.split %}
+                    <span class="tech-chip">{{ tech|cut:"," }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+          </div>
+
+          <!-- Footer -->
+          <div class="project-card-footer">
+            {% if project.github_link %}
+              <a href="{{ project.github_link }}" target="_blank" rel="noopener" class="btn-github">
+                <i class="bi bi-github"></i> View Code
+              </a>
+            {% else %}
+              <span class="no-link"><i class="bi bi-link-45deg me-1"></i>No source link</span>
+            {% endif %}
+            <div class="card-actions">
+              <a href="{% url 'project_edit' project.pk %}" class="edit-btn" title="Edit">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <a href="{% url 'project_delete' project.pk %}" class="del-btn" title="Delete">
+                <i class="bi bi-trash3-fill"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-box">
+      <div class="empty-icon"><i class="bi bi-code-slash"></i></div>
+      <h3>No projects added yet</h3>
+      <p>Add your technical project details to demonstrate implementation skills to prospective recruiters.</p>
+      <a href="{% url 'project_create' %}" class="btn-add"><i class="bi bi-plus-lg"></i> Add Project</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

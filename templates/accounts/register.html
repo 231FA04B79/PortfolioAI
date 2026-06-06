@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Create Account - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 col-lg-5">
+    <div class="card border-0 shadow-lg glass-card fade-in">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <h2 class="fw-bold text-dark mb-1">Create Account</h2>
+          <p class="text-muted small">Register to start building and scoring your portfolio.</p>
+        </div>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small mb-3">
+              {% for error in form.non_field_errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="id_username" class="form-label fw-semibold text-dark">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" name="username" id="id_username" class="form-control border-start-0 py-2" required placeholder="e.g. dev_candidate" value="{{ form.username.value|default:'' }}">
+            </div>
+            {% if form.username.errors %}
+              <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="id_email" class="form-label fw-semibold text-dark">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+              <input type="email" name="email" id="id_email" class="form-control border-start-0 py-2" required placeholder="e.g. name@domain.com" value="{{ form.email.value|default:'' }}">
+            </div>
+            {% if form.email.errors %}
+              <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+
+
+          <div class="mb-3">
+            <label for="id_password" class="form-label fw-semibold text-dark">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-muted"></i></span>
+              <input type="password" name="password" id="id_password" class="form-control border-start-0 border-end-0 py-2" required placeholder="••••••••">
+              <button class="btn btn-outline-secondary border-start-0 toggle-password" type="button" data-toggle-target="id_password">
+                <i class="bi bi-eye-slash text-muted"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+              <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label for="id_password_confirm" class="form-label fw-semibold text-dark">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock-fill text-muted"></i></span>
+              <input type="password" name="password_confirm" id="id_password_confirm" class="form-control border-start-0 border-end-0 py-2" required placeholder="••••••••">
+              <button class="btn btn-outline-secondary border-start-0 toggle-password" type="button" data-toggle-target="id_password_confirm">
+                <i class="bi bi-eye-slash text-muted"></i>
+              </button>
+            </div>
+            {% if form.password_confirm.errors %}
+              <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100 py-2.5 shadow-sm">
+            <i class="bi bi-send me-2"></i>Send Verification Code
+          </button>
+        </form>
+
+        <p class="mt-4 text-center text-muted small">
+          Already have an account? <a href="{% url 'login' %}" class="text-primary fw-semibold text-decoration-none">Sign In here</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

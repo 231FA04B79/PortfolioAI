@@ -1,0 +1,101 @@
+{% load static %}
+<div class="glass-card p-4 overflow-hidden border border-slate-200 bg-white/70 backdrop-blur shadow-sm rounded-card">
+  <!-- Title / Header -->
+  <div class="flex items-center gap-2 text-slate-800 font-bold text-base mb-5 pb-2 border-b border-slate-200/60">
+    <i class="bi bi-grid-fill text-blue-600"></i>
+    <span>Navigation Menu</span>
+  </div>
+  
+  <!-- Core Section -->
+  <div class="mb-5">
+    <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-2">Core</div>
+    <nav class="space-y-1">
+      <a href="{% url 'dashboard' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-speedometer2 text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="{% url 'analytics_dashboard' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-graph-up-arrow text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all"></i>
+        <span>Analytics</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Portfolio Section -->
+  <div class="mb-5">
+    <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-2">Portfolio</div>
+    <nav class="space-y-1">
+      <a href="{% url 'education_list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-mortarboard text-slate-400 group-hover:text-purple-500 group-hover:scale-110 transition-all"></i>
+        <span>Education</span>
+      </a>
+      <a href="{% url 'skill_list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-tools text-slate-400 group-hover:text-indigo-500 group-hover:scale-110 transition-all"></i>
+        <span>Skills</span>
+      </a>
+      <a href="{% url 'project_list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-code-slash text-slate-400 group-hover:text-cyan-500 group-hover:scale-110 transition-all"></i>
+        <span>Projects</span>
+      </a>
+      <a href="{% url 'certificate_list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-patch-check text-slate-400 group-hover:text-yellow-500 group-hover:scale-110 transition-all"></i>
+        <span>Certifications</span>
+      </a>
+      <a href="{% url 'achievement_list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-trophy text-slate-400 group-hover:text-red-500 group-hover:scale-110 transition-all"></i>
+        <span>Achievements</span>
+      </a>
+      <a href="{% url 'resume_import' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-file-earmark-arrow-up text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all"></i>
+        <span>AI Resume Import</span>
+      </a>
+      <a href="{% url 'ats_resume_builder' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-file-earmark-pdf text-slate-400 group-hover:text-pink-500 group-hover:scale-110 transition-all"></i>
+        <span>ATS Resume Builder</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- AI Analyzers Section -->
+  <div>
+    <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-2">AI Analyzers</div>
+    <nav class="space-y-1">
+      <a href="{% url 'github_analyzer' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-github text-slate-400 group-hover:text-black group-hover:scale-110 transition-all"></i>
+        <span>GitHub Analyzer</span>
+      </a>
+      <a href="{% url 'resume_analyzer' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-file-text text-slate-400 group-hover:text-indigo-500 group-hover:scale-110 transition-all"></i>
+        <span>Resume Analyzer</span>
+      </a>
+      <a href="{% url 'skill_gap' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-clipboard-data text-slate-400 group-hover:text-amber-500 group-hover:scale-110 transition-all"></i>
+        <span>Skill Gap</span>
+      </a>
+      <a href="{% url 'career_recommendation' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-compass text-slate-400 group-hover:text-red-500 group-hover:scale-110 transition-all"></i>
+        <span>Career Paths</span>
+      </a>
+      <a href="{% url 'portfolio_score' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-lightning-charge text-slate-400 group-hover:text-yellow-500 group-hover:scale-110 transition-all"></i>
+        <span>Portfolio Score</span>
+      </a>
+      <a href="{% url 'coding_analyzer' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-code text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all"></i>
+        <span>Coding Profiles</span>
+      </a>
+      <a href="{% url 'placement_readiness' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-shield-check text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all"></i>
+        <span>Placement Readiness</span>
+      </a>
+      <a href="{% url 'project_recommender' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-diagram-3 text-slate-400 group-hover:text-purple-500 group-hover:scale-110 transition-all"></i>
+        <span>Project Recommender</span>
+      </a>
+      <a href="{% url 'interview_questions' %}" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 group transition-all duration-200">
+        <i class="bi bi-question-circle text-slate-400 group-hover:text-cyan-500 group-hover:scale-110 transition-all"></i>
+        <span>Interview Prep</span>
+      </a>
+    </nav>
+  </div>
+</div>

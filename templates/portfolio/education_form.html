@@ -1,0 +1,89 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Education{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+  <div class="col-md-9">
+    <div class="card shadow-sm glass-card">
+      <div class="card-body p-4">
+        <h2 class="h4 fw-bold text-primary mb-4">{{ title }}</h2>
+        <form method="post" novalidate id="educationForm">
+          {% csrf_token %}
+          
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-dark">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text text-muted small">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          
+          <div class="pt-2">
+            <button class="btn btn-primary px-4 shadow-sm" type="submit">Save Education</button>
+            <a href="{% url 'education_list' %}" class="btn btn-secondary px-3">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const eduTypeSelect = document.getElementById("id_education_type");
+    const scoringTypeSelect = document.getElementById("id_scoring_type");
+    const scoreValueInput = document.getElementById("id_score_value");
+    
+    if (eduTypeSelect && scoringTypeSelect && scoreValueInput) {
+      const scoringTypeContainer = scoringTypeSelect.closest('.mb-3');
+      const scoreValueContainer = scoreValueInput.closest('.mb-3');
+      const scoreValueLabel = scoreValueContainer.querySelector('label');
+
+      function updateFormBehavior() {
+        const eduType = eduTypeSelect.value;
+        
+        if (eduType === 'Undergraduate') {
+          // Auto set to CGPA and hide scoring type selection
+          scoringTypeSelect.value = 'CGPA';
+          scoringTypeContainer.style.display = 'none';
+          scoreValueContainer.style.display = 'block';
+          scoreValueLabel.textContent = 'CGPA (Score)';
+          scoreValueInput.placeholder = 'e.g. 8.5';
+        } else if (eduType === 'SSC' || eduType === 'Intermediate') {
+          // Auto set to Percentage and hide scoring type selection
+          scoringTypeSelect.value = 'Percentage';
+          scoringTypeContainer.style.display = 'none';
+          scoreValueContainer.style.display = 'block';
+          scoreValueLabel.textContent = 'Percentage (%)';
+          scoreValueInput.placeholder = 'e.g. 92.5';
+        } else {
+          // Diploma, Postgraduate, PhD, Other: allow custom choice
+          scoringTypeContainer.style.display = 'block';
+          scoreValueContainer.style.display = 'block';
+          
+          if (scoringTypeSelect.value === 'CGPA') {
+            scoreValueLabel.textContent = 'CGPA (Score)';
+            scoreValueInput.placeholder = 'e.g. 9.0';
+          } else {
+            scoreValueLabel.textContent = 'Percentage (%)';
+            scoreValueInput.placeholder = 'e.g. 85';
+          }
+        }
+      }
+
+      eduTypeSelect.addEventListener("change", updateFormBehavior);
+      scoringTypeSelect.addEventListener("change", updateFormBehavior);
+      
+      // Initialize view state
+      updateFormBehavior();
+    }
+  });
+</script>
+{% endblock %}

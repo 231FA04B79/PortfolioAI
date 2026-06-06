@@ -1,0 +1,400 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Analytics Dashboard - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+        <i class="bi bi-graph-up-arrow text-emerald-500"></i>
+        <span>Analytics Dashboard</span>
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Consolidated overview of your skills, portfolio completion, placement readiness, and career alignment.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'placement_readiness' %}" class="btn btn-outline-primary inline-flex items-center gap-1.5 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all">
+        <i class="bi bi-shield-check"></i>
+        <span>Readiness Details</span>
+      </a>
+      <a href="{% url 'portfolio_score' %}" class="btn btn-primary inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-sm transition-all">
+        <i class="bi bi-lightning-charge"></i>
+        <span>Score Analysis</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Placement Readiness Gauge -->
+    <div class="lg:col-span-4">
+      <div class="rounded-xl p-6 text-center text-white shadow-lg flex flex-col justify-center items-center min-h-[220px]" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-200 mb-4">Placement Readiness</h3>
+        <div class="relative w-36 h-36 mb-4">
+          <div class="absolute inset-0 flex flex-col justify-center items-center">
+            <span class="text-4xl font-extrabold font-monospace">{{ readiness }}%</span>
+            <span class="text-[9px] uppercase font-bold tracking-wider text-blue-200 mt-0.5">Index</span>
+          </div>
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+            <path stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path stroke="#ffffff" stroke-width="3" stroke-dasharray="{{ readiness }}, 100" stroke-linecap="round" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
+        <p class="text-xs text-blue-200 leading-relaxed px-2">
+          {% if readiness >= 80 %}Excellent! You're ready for industry placements. Keep it up!
+          {% elif readiness >= 50 %}Good progress! Add more projects and coding scores to rank higher.
+          {% else %}Start expanding your skills and add key projects to boost your readiness.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- Career Match Leaderboard -->
+    <div class="lg:col-span-8">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 h-full">
+        <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <i class="bi bi-compass text-blue-600"></i>
+          <span>Career Match Summary</span>
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="border-b border-slate-100">
+                <th class="text-left py-2 px-3 font-bold text-slate-400 uppercase tracking-wider w-1/3">Role</th>
+                <th class="text-left py-2 px-3 font-bold text-slate-400 uppercase tracking-wider w-1/2">Match Percentage</th>
+                <th class="text-right py-2 px-3 font-bold text-slate-400 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody id="career-leaderboard" class="divide-y divide-slate-50">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Portfolio Visitor Insights -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Profile Views</span>
+      <span class="text-2xl font-extrabold text-blue-600 font-monospace">{{ visitor_metrics.total_views }}</span>
+    </div>
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Unique Visitors</span>
+      <span class="text-2xl font-extrabold text-emerald-600 font-monospace">{{ visitor_metrics.unique_visitors }}</span>
+    </div>
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Recruiter Visits</span>
+      <span class="text-2xl font-extrabold text-amber-600 font-monospace">{{ visitor_metrics.recruiter_visits }}</span>
+    </div>
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Resume Downloads</span>
+      <span class="text-2xl font-extrabold text-slate-800 font-monospace">{{ visitor_metrics.resume_downloads }}</span>
+    </div>
+  </div>
+
+  <!-- Traffic Line Chart -->
+  <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-sm font-bold text-slate-950 flex items-center gap-2">
+        <i class="bi bi-eye text-blue-600"></i>
+        <span>Portfolio Views Analytics</span>
+      </h3>
+      <select id="traffic-time-select" class="text-xs font-semibold bg-white border border-slate-300 text-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 !mb-0 w-auto" style="min-width:150px;">
+        <option value="daily" selected>Daily Views (7d)</option>
+        <option value="weekly">Weekly Views (4w)</option>
+        <option value="monthly">Monthly Views (6m)</option>
+      </select>
+    </div>
+    <div class="relative h-[240px] w-full">
+      <canvas id="trafficChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Skill Distribution and Portfolio Completion -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Skill Distribution Chart -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+      <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2.5">
+        <i class="bi bi-activity text-blue-600"></i>
+        <span>Skill Level Distribution</span>
+      </h3>
+      <div class="relative h-[280px] w-full">
+        <canvas id="skillsChart"></canvas>
+        <div id="skillsNoData" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center text-slate-400">
+          <i class="bi bi-folder2-open text-4xl mb-2 block"></i>
+          <p class="text-xs">No skills registered yet.<br><a href="{% url 'profile' %}" class="text-blue-600 underline text-xs">Add some skills</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Completion Chart -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+      <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2.5">
+        <i class="bi bi-pie-chart-fill text-blue-600"></i>
+        <span>Portfolio Section Scores</span>
+      </h3>
+      <div class="relative h-[280px] w-full">
+        <canvas id="portfolioChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Career Alignment Radar & AI Insights -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Career Alignment Radar -->
+    <div class="lg:col-span-8">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2.5">
+          <i class="bi bi-radar text-blue-600"></i>
+          <span>Career Alignment Radar</span>
+        </h3>
+        <div class="relative h-[300px] w-full">
+          <canvas id="careerRadarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Insights Box -->
+    <div class="lg:col-span-4">
+      <div class="glass-card bg-slate-50/80 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 flex flex-col justify-between h-full">
+        <div>
+          <h4 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-1.5">
+            <i class="bi bi-chat-square-quote text-blue-600"></i>
+            <span>AI Insights</span>
+          </h4>
+          <ul class="space-y-4">
+            <li class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+              <span class="text-xs text-slate-500 leading-relaxed">Complete your Competitive Coding profiles to increase problem-solving ratings.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+              <span class="text-xs text-slate-500 leading-relaxed">Maintain active commit history on GitHub to automatically build consistency badges.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+              <span class="text-xs text-slate-500 leading-relaxed">Run a skill gap analysis for your dream target roles to get detailed roadmap steps.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="border-t border-slate-200 pt-4 mt-6">
+          <a href="{% url 'career_recommendation' %}" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+            <i class="bi bi-arrow-right-circle"></i>
+            <span>View Career Paths</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data container for JavaScript charts -->
+  <div id="analytics-data" class="hidden"
+       data-skill-labels="{{ skill_labels_json }}"
+       data-skill-levels="{{ skill_levels_json }}"
+       data-portfolio-labels="{{ portfolio_labels_json }}"
+       data-portfolio-data="{{ portfolio_data_json }}"
+       data-career-labels="{{ career_labels_json }}"
+       data-career-scores="{{ career_scores_json }}"
+       data-daily-labels="{{ daily_labels_json }}"
+       data-daily-data="{{ daily_data_json }}"
+       data-weekly-labels="{{ weekly_labels_json }}"
+       data-weekly-data="{{ weekly_data_json }}"
+       data-monthly-labels="{{ monthly_labels_json }}"
+       data-monthly-data="{{ monthly_data_json }}">
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dataEl = document.getElementById('analytics-data');
+    const skillLabels = JSON.parse(dataEl.getAttribute('data-skill-labels'));
+    const skillLevels = JSON.parse(dataEl.getAttribute('data-skill-levels'));
+    const portfolioLabels = JSON.parse(dataEl.getAttribute('data-portfolio-labels'));
+    const portfolioData = JSON.parse(dataEl.getAttribute('data-portfolio-data'));
+    const careerLabels = JSON.parse(dataEl.getAttribute('data-career-labels'));
+    const careerScores = JSON.parse(dataEl.getAttribute('data-career-scores'));
+
+    // 1. Career Leaderboard Table
+    const leaderboard = document.getElementById('career-leaderboard');
+    const pairs = careerLabels.map((label, i) => ({ role: label, score: careerScores[i] }))
+      .sort((a, b) => b.score - a.score);
+
+    pairs.slice(0, 4).forEach(pair => {
+      let barColor = 'bg-rose-500';
+      if (pair.score >= 75) barColor = 'bg-emerald-500';
+      else if (pair.score >= 40) barColor = 'bg-amber-500';
+
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-slate-50 transition-all';
+      row.innerHTML = `
+        <td class="py-2.5 px-3 font-semibold text-slate-800">${pair.role}</td>
+        <td class="py-2.5 px-3">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-800 w-8 text-right">${pair.score}%</span>
+            <div class="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div class="${barColor} h-full rounded-full" style="width:${pair.score}%"></div>
+            </div>
+          </div>
+        </td>
+        <td class="py-2.5 px-3 text-right">
+          <a href="{% url 'skill_gap' %}" class="text-blue-600 hover:text-blue-800 font-semibold transition-all">Gap →</a>
+        </td>`;
+      leaderboard.appendChild(row);
+    });
+
+    // 2. Skill Distribution Chart
+    if (skillLabels.length === 0) {
+      document.getElementById('skillsNoData').classList.remove('hidden');
+      document.getElementById('skillsChart').style.display = 'none';
+    } else {
+      const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+      new Chart(skillsCtx, {
+        type: 'bar',
+        data: {
+          labels: skillLabels,
+          datasets: [{
+            label: 'Proficiency Level (1-100)',
+            data: skillLevels,
+            backgroundColor: 'rgba(37, 99, 235, 0.75)',
+            borderColor: '#2563EB',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: '#F1F5F9' }, ticks: { font: { size: 10, family: 'Inter, sans-serif' } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter, sans-serif' } } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // 3. Portfolio Completion Chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    new Chart(portfolioCtx, {
+      type: 'polarArea',
+      data: {
+        labels: portfolioLabels,
+        datasets: [{
+          data: portfolioData,
+          backgroundColor: [
+            'rgba(37, 99, 235, 0.65)', 'rgba(16, 185, 129, 0.65)', 'rgba(245, 158, 11, 0.65)',
+            'rgba(239, 68, 68, 0.65)', 'rgba(6, 182, 212, 0.65)', 'rgba(124, 58, 237, 0.65)',
+            'rgba(15, 23, 42, 0.65)'
+          ],
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { r: { suggestedMin: 0, suggestedMax: 20, ticks: { display: false } } },
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 11, padding: 10, font: { size: 10, family: 'Inter, sans-serif' } } }
+        }
+      }
+    });
+
+    // 4. Career Alignment Radar Chart
+    const radarCtx = document.getElementById('careerRadarChart').getContext('2d');
+    new Chart(radarCtx, {
+      type: 'radar',
+      data: {
+        labels: careerLabels,
+        datasets: [{
+          label: 'Match Percentage',
+          data: careerScores,
+          backgroundColor: 'rgba(37, 99, 235, 0.12)',
+          borderColor: 'rgba(37, 99, 235, 0.85)',
+          pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+          pointBorderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: { display: true, color: 'rgba(0,0,0,0.06)' },
+            suggestedMin: 0,
+            suggestedMax: 100,
+            ticks: { stepSize: 20, backdropColor: 'transparent', font: { size: 9, family: 'Inter, sans-serif' } },
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            pointLabels: { font: { size: 10, family: 'Inter, sans-serif', weight: '600' } }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // 5. Traffic Line Chart
+    const dailyLabels = JSON.parse(dataEl.getAttribute('data-daily-labels'));
+    const dailyData = JSON.parse(dataEl.getAttribute('data-daily-data'));
+    const weeklyLabels = JSON.parse(dataEl.getAttribute('data-weekly-labels'));
+    const weeklyData = JSON.parse(dataEl.getAttribute('data-weekly-data'));
+    const monthlyLabels = JSON.parse(dataEl.getAttribute('data-monthly-labels'));
+    const monthlyData = JSON.parse(dataEl.getAttribute('data-monthly-data'));
+
+    const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+    const trafficChart = new Chart(trafficCtx, {
+      type: 'line',
+      data: {
+        labels: dailyLabels,
+        datasets: [{
+          label: 'Views',
+          data: dailyData,
+          backgroundColor: 'rgba(37, 99, 235, 0.10)',
+          borderColor: '#2563EB',
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#2563EB',
+          pointRadius: 3,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { precision: 0, font: { size: 10, family: 'Inter, sans-serif' } } },
+          x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter, sans-serif' } } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Time filter listener
+    const timeSelector = document.getElementById('traffic-time-select');
+    if (timeSelector) {
+      timeSelector.addEventListener('change', function() {
+        const filter = this.value;
+        if (filter === 'weekly') {
+          trafficChart.data.labels = weeklyLabels;
+          trafficChart.data.datasets[0].data = weeklyData;
+        } else if (filter === 'monthly') {
+          trafficChart.data.labels = monthlyLabels;
+          trafficChart.data.datasets[0].data = monthlyData;
+        } else {
+          trafficChart.data.labels = dailyLabels;
+          trafficChart.data.datasets[0].data = dailyData;
+        }
+        trafficChart.update();
+      });
+    }
+  });
+</script>
+{% endblock %}

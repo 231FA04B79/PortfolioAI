@@ -1,0 +1,715 @@
+{% extends "base.html" %}
+{% block title %}AI ATS Resume Builder{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════
+     PAGE LAYOUT
+  ══════════════════════════════════════ */
+  .ats-page {
+    min-height: 100vh;
+    background: #f0f4f8;
+    padding: 2.5rem 0 3rem;
+  }
+  .ats-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ── Page Header ── */
+  .ats-hero {
+    margin-bottom: 2rem;
+  }
+  .ats-hero-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+  .ats-hero-title i { color: #3b82f6; }
+  .ats-hero-sub {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  /* ── Two-column grid ── */
+  .ats-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .ats-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ══════════════════════════════════════
+     SHARED CARD
+  ══════════════════════════════════════ */
+  .ats-card {
+    background: #ffffff;
+    border: 1px solid #e4e9f2;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+  .ats-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.1rem 1.5rem 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .ats-card-header-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .ats-card-header-title i { color: #3b82f6; font-size: 1rem; }
+  .ats-card-body { padding: 1.25rem 1.5rem; }
+
+  /* ══════════════════════════════════════
+     ATS SCORE CARD
+  ══════════════════════════════════════ */
+  .score-card { text-align: center; }
+  .score-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Circular score ring */
+  .score-ring-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.25rem;
+  }
+  .score-ring-wrap svg {
+    transform: rotate(-90deg);
+  }
+  .score-ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 10; }
+  .score-ring-fill {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
+  }
+  .score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-value {
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .score-unit {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+  }
+
+  /* Score color */
+  {% if ats_score >= 80 %}
+  .score-ring-fill { stroke: #10b981; }
+  .score-value { color: #10b981; }
+  .score-status { color: #10b981; background: #ecfdf5; border: 1px solid #d1fae5; }
+  {% elif ats_score >= 50 %}
+  .score-ring-fill { stroke: #f59e0b; }
+  .score-value { color: #f59e0b; }
+  .score-status { color: #d97706; background: #fffbeb; border: 1px solid #fde68a; }
+  {% else %}
+  .score-ring-fill { stroke: #ef4444; }
+  .score-value { color: #ef4444; }
+  .score-status { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; }
+  {% endif %}
+
+  .score-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .score-goal {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+  .score-progress-track {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .score-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    width: {{ ats_score }}%;
+    {% if ats_score >= 80 %}background: linear-gradient(90deg,#10b981,#34d399);{% elif ats_score >= 50 %}background: linear-gradient(90deg,#f59e0b,#fbbf24);{% else %}background: linear-gradient(90deg,#ef4444,#f87171);{% endif %}
+    transition: width 1s ease;
+  }
+
+  /* ══════════════════════════════════════
+     TEMPLATE SELECTOR
+  ══════════════════════════════════════ */
+  .tmpl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    margin-bottom: 1.1rem;
+  }
+  .tmpl-item input[type="radio"] { display: none; }
+  .tmpl-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.85rem 0.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    background: #f8fafc;
+    user-select: none;
+  }
+  .tmpl-label i { font-size: 1.35rem; color: #94a3b8; transition: color 0.15s; }
+  .tmpl-label span { font-size: 0.73rem; font-weight: 700; color: #64748b; transition: color 0.15s; }
+  .tmpl-item input:checked + .tmpl-label {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  .tmpl-item input:checked + .tmpl-label i { color: #3b82f6; }
+  .tmpl-item input:checked + .tmpl-label span { color: #1d4ed8; }
+  .tmpl-label:hover { border-color: #93c5fd; background: #f0f7ff; }
+
+  /* ── AI Toggle ── */
+  .ai-toggle-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    margin-bottom: 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ai-toggle-box:hover { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .ai-toggle-box input { margin-top: 2px; accent-color: #3b82f6; width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+  .ai-toggle-text strong { font-size: 0.875rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem; }
+  .ai-toggle-text strong i { color: #6366f1; }
+  .ai-toggle-text p { font-size: 0.76rem; color: #64748b; margin: 0.2rem 0 0; line-height: 1.5; }
+
+  /* ── Download Button ── */
+  .btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(59,130,246,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+  }
+  .btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59,130,246,0.45);
+    color: #fff;
+  }
+
+  /* ── Keywords Card ── */
+  .kw-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
+  .kw-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .kw-chip i { color: #3b82f6; font-size: 0.65rem; }
+  .btn-add-skill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #3b82f6;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-add-skill:hover { background: #dbeafe; color: #2563eb; }
+
+  /* ══════════════════════════════════════
+     RIGHT COLUMN
+  ══════════════════════════════════════ */
+  /* ATS Checklist */
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+  .checklist-icon.warn { background: #fffbeb; color: #f59e0b; }
+  .checklist-text { font-size: 0.82rem; color: #334155; line-height: 1.5; margin: 0; padding-top: 0.2rem; }
+  .alert-all-good {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #ecfdf5;
+    border: 1px solid #d1fae5;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #065f46;
+    font-weight: 600;
+  }
+  .alert-all-good i { font-size: 1.3rem; color: #10b981; }
+
+  /* ── Live Preview ── */
+  .preview-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #3b82f6;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 20px;
+    padding: 0.2rem 0.65rem;
+  }
+  #resume-preview-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    background: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 520px;
+    color: #111;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  #resume-preview-box h2 { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  #resume-preview-box h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    color: var(--preview-primary, #000);
+  }
+</style>
+
+<div class="ats-page">
+  <div class="ats-container">
+
+    <!-- Page Hero -->
+    <div class="ats-hero">
+      <h1 class="ats-hero-title">
+        <i class="bi bi-file-earmark-pdf-fill"></i> AI ATS Resume Builder
+      </h1>
+      <p class="ats-hero-sub">Optimize your matching strength, pick a layout template, and export a print-ready PDF.</p>
+    </div>
+
+    <div class="ats-grid">
+
+      <!-- ══ LEFT COLUMN ══ -->
+      <div class="ats-left">
+
+        <!-- ATS Score Card -->
+        <div class="ats-card score-card">
+          <div class="ats-card-body" style="padding-top:1.5rem;padding-bottom:1.5rem;">
+            <div class="score-label">ATS Matching Index</div>
+
+            <!-- SVG Ring -->
+            {% with radius=60 circ=377 offset_val=377|add:"-"|add:ats_score %}
+            <div class="score-ring-wrap">
+              <svg viewBox="0 0 140 140" width="150" height="150">
+                <circle class="score-ring-bg" cx="70" cy="70" r="60"/>
+                <circle class="score-ring-fill" cx="70" cy="70" r="60"
+                  stroke-dasharray="377"
+                  stroke-dashoffset="{{ ats_score | floatformat:0 | add:'0' }}"
+                  style="stroke-dashoffset: calc(377 - (377 * {{ ats_score }} / 100));"/>
+              </svg>
+              <div class="score-ring-text">
+                <span class="score-value">{{ ats_score }}</span>
+                <span class="score-unit">/ 100</span>
+              </div>
+            </div>
+            {% endwith %}
+
+            <div>
+              {% if ats_score >= 80 %}
+                <span class="score-status"><i class="bi bi-check-circle-fill"></i> Excellent</span>
+              {% elif ats_score >= 50 %}
+                <span class="score-status"><i class="bi bi-dash-circle-fill"></i> Average</span>
+              {% else %}
+                <span class="score-status"><i class="bi bi-x-circle-fill"></i> Needs Work</span>
+              {% endif %}
+            </div>
+
+            <div class="score-progress-track"><div class="score-progress-fill"></div></div>
+            <p class="score-goal">Aim for <strong>80%+</strong> by completing your profile, linking GitHub, and listing skills & projects.</p>
+          </div>
+        </div>
+
+        <!-- Export Options Card -->
+        <div class="ats-card">
+          <div class="ats-card-header">
+            <h3 class="ats-card-header-title"><i class="bi bi-sliders2"></i> Resume Export Options</h3>
+          </div>
+          <div class="ats-card-body">
+
+            <!-- Template selector -->
+            <div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;">Select Design Template</div>
+            <div class="tmpl-grid" id="template-selector">
+              <div class="tmpl-item">
+                <input type="radio" name="resume_template" id="tmpl-ats" value="ats" checked onchange="updatePreview()">
+                <label class="tmpl-label" for="tmpl-ats">
+                  <i class="bi bi-file-earmark-text"></i>
+                  <span>ATS Classic</span>
+                </label>
+              </div>
+              <div class="tmpl-item">
+                <input type="radio" name="resume_template" id="tmpl-modern" value="modern" onchange="updatePreview()">
+                <label class="tmpl-label" for="tmpl-modern">
+                  <i class="bi bi-palette"></i>
+                  <span>Modern Slate</span>
+                </label>
+              </div>
+              <div class="tmpl-item">
+                <input type="radio" name="resume_template" id="tmpl-professional" value="professional" onchange="updatePreview()">
+                <label class="tmpl-label" for="tmpl-professional">
+                  <i class="bi bi-award"></i>
+                  <span>Executive Serif</span>
+                </label>
+              </div>
+              <div class="tmpl-item">
+                <input type="radio" name="resume_template" id="tmpl-fresher" value="fresher" onchange="updatePreview()">
+                <label class="tmpl-label" for="tmpl-fresher">
+                  <i class="bi bi-mortarboard"></i>
+                  <span>Fresher Grid</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- AI Toggle -->
+            <label class="ai-toggle-box" for="ai-enhance-toggle">
+              <input type="checkbox" id="ai-enhance-toggle" onchange="updatePreview()">
+              <div class="ai-toggle-text">
+                <strong><i class="bi bi-stars"></i> Apply AI Content Enhancements</strong>
+                <p>Rewrites project descriptions with strong verbs, generates a summary, and highlights core tech strengths.</p>
+              </div>
+            </label>
+
+            <!-- Download Button -->
+            <button type="button" class="btn-download" onclick="downloadPDF()">
+              <i class="bi bi-cloud-arrow-down-fill"></i> Download PDF Resume
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Recommended Keywords -->
+        <div class="ats-card">
+          <div class="ats-card-header">
+            <h3 class="ats-card-header-title"><i class="bi bi-tags-fill"></i> Recommended Keywords</h3>
+          </div>
+          <div class="ats-card-body">
+            <p style="font-size:.78rem;color:#64748b;margin-bottom:.85rem;">Integrate these industry terms in your skills list to increase search weight:</p>
+            <div class="kw-chips">
+              {% for kw in recommended_keywords %}
+                <span class="kw-chip"><i class="bi bi-plus-circle-fill"></i> {{ kw }}</span>
+              {% empty %}
+                <span style="font-size:.78rem;color:#94a3b8;">All recommended keywords are already in your skills!</span>
+              {% endfor %}
+            </div>
+            <a href="{% url 'skill_list' %}" class="btn-add-skill"><i class="bi bi-plus-circle"></i> Add Technical Skills</a>
+          </div>
+        </div>
+
+      </div><!-- /ats-left -->
+
+      <!-- ══ RIGHT COLUMN ══ -->
+      <div class="ats-right">
+
+        <!-- ATS Checklist -->
+        <div class="ats-card">
+          <div class="ats-card-header">
+            <h3 class="ats-card-header-title"><i class="bi bi-list-check"></i> ATS Checklist & Feedback</h3>
+          </div>
+          <div class="ats-card-body" style="padding-top:0.5rem;">
+            {% if suggestions %}
+              {% for sug in suggestions %}
+                <div class="checklist-item">
+                  <div class="checklist-icon warn"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                  <p class="checklist-text">{{ sug }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="alert-all-good">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Excellent! Your portfolio covers all base sections optimized for ATS compliance.</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Live Resume Preview -->
+        <div class="ats-card">
+          <div class="ats-card-header">
+            <div class="preview-panel-header" style="width:100%;">
+              <h3 class="ats-card-header-title"><i class="bi bi-eye"></i> Resume Live Preview</h3>
+              <span class="preview-badge">Interactive Preview</span>
+            </div>
+          </div>
+          <div class="ats-card-body">
+
+            <div id="resume-preview-box">
+              <!-- Preview Header -->
+              <div style="text-align:center;margin-bottom:12px;">
+                <h2 id="prev-name">{{ profile.full_name|default:user.username }}</h2>
+                <p id="prev-title" style="color:#555;margin:2px 0;font-size:13px;">{{ profile.professional_title|default:"Software Developer" }}</p>
+                <p style="font-size:10.5px;color:#777;margin:2px 0;">
+                  {{ user.email }}{% if profile.phone %} &bull; {{ profile.phone }}{% endif %}{% if profile.location %} &bull; {{ profile.location }}{% endif %}
+                </p>
+                <p style="font-size:10.5px;color:#777;margin:0;">
+                  {% if profile.github %}GitHub: {{ profile.github|slice:"8:" }}{% endif %}{% if profile.linkedin %} &bull; LinkedIn: {{ profile.linkedin|slice:"8:" }}{% endif %}
+                </p>
+              </div>
+
+              <!-- Summary -->
+              <div class="mb-3">
+                <h4 id="prev-summary-header">Professional Summary</h4>
+                <p id="prev-summary-text" style="font-size:11.5px;margin:0;">{{ profile.bio|default:"Goal-oriented developer dedicated to engineering reliable systems and writing clean, maintainable code." }}</p>
+              </div>
+
+              <!-- Skills -->
+              <div class="mb-3">
+                <h4 id="prev-skills-header">Technical Expertise</h4>
+                <div id="prev-strengths-box" class="d-none" style="font-size:11.5px;margin-bottom:4px;"><strong>Core Strengths:</strong> <span id="prev-strengths-list">{{ highlighted_strengths|join:", " }}</span></div>
+                <p id="prev-skills-text" style="font-size:11.5px;margin:0;">{% for skill in skills %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% empty %}No skills registered yet.{% endfor %}</p>
+              </div>
+
+              <!-- Projects -->
+              <div id="prev-projects-container" class="mb-3">
+                <h4 id="prev-projects-header">Key Projects</h4>
+                {% for proj in projects %}
+                  <div class="mb-2 project-item" data-desc="{{ proj.description }}">
+                    <div style="display:flex;justify-content:space-between;font-weight:700;font-size:11.5px;">
+                      <span>{{ proj.title }}</span>
+                      {% if proj.github_link %}<span style="color:#888;font-size:10px;font-family:monospace;">{{ proj.github_link|slice:"8:" }}</span>{% endif %}
+                    </div>
+                    <p class="proj-desc-block" style="font-size:11px;margin:2px 0 0;">{{ proj.description }}</p>
+                    {% if proj.tech_stack %}<p style="font-size:10.5px;color:#777;margin:1px 0 0;">Technologies: {{ proj.tech_stack }}</p>{% endif %}
+                  </div>
+                {% empty %}
+                  <p style="font-size:11px;color:#aaa;">No projects added yet.</p>
+                {% endfor %}
+              </div>
+
+              <!-- Education -->
+              <div id="prev-education-container" class="mb-3">
+                <h4 id="prev-education-header">Education</h4>
+                {% for edu in educations %}
+                  <div style="margin-bottom:6px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11.5px;">
+                      <strong>{{ edu.degree }}</strong><span>Graduation: {{ edu.completion_year }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;">
+                      <span>{{ edu.college_name }}</span>
+                      {% if edu.score_value %}<span>{{ edu.scoring_type }}: {{ edu.score_value }}{% if edu.scoring_type == 'Percentage' %}%{% endif %}</span>{% endif %}
+                    </div>
+                  </div>
+                {% empty %}
+                  <p style="font-size:11px;color:#aaa;">No education history added yet.</p>
+                {% endfor %}
+              </div>
+
+              <!-- Certifications -->
+              <div id="prev-cert-container" class="mb-3">
+                <h4 id="prev-cert-header">Professional Credentials</h4>
+                {% for cert in certifications %}
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;">
+                    <span>{{ cert.certificate_name }} &bull; <span style="color:#777;">{{ cert.issuing_organization }}</span></span>
+                    <span style="color:#777;font-size:10.5px;">{{ cert.issue_date|date:"F Y" }}</span>
+                  </div>
+                {% empty %}
+                  <p style="font-size:11px;color:#aaa;">No credentials uploaded yet.</p>
+                {% endfor %}
+              </div>
+
+              <!-- Achievements -->
+              <div id="prev-ach-container">
+                <h4 id="prev-ach-header">Awards & Achievements</h4>
+                {% for ach in achievements %}
+                  <div style="font-size:11.5px;margin-bottom:3px;">
+                    <strong>&bull; {{ ach.title }}</strong>
+                    {% if ach.description %}<span style="color:#666;font-size:11px;"> — {{ ach.description }}</span>{% endif %}
+                  </div>
+                {% empty %}
+                  <p style="font-size:11px;color:#aaa;">No achievements listed yet.</p>
+                {% endfor %}
+              </div>
+
+            </div><!-- /resume-preview-box -->
+          </div>
+        </div>
+
+      </div><!-- /ats-right -->
+    </div><!-- /ats-grid -->
+  </div><!-- /ats-container -->
+</div><!-- /ats-page -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const aiSummary      = "{{ generated_summary|escapejs }}";
+  const originalSummary = "{{ profile.bio|escapejs }}" || "Goal-oriented developer dedicated to engineering reliable systems and writing clean, maintainable code.";
+
+  const wordingReplacements = {
+    "built":"Engineered and deployed","made":"Engineered and deployed",
+    "created":"Engineered and deployed","developed":"Engineered and deployed",
+    "used":"Leveraged","worked with":"Leveraged","utilised":"Leveraged","utilized":"Leveraged",
+    "did":"Spearheaded","worked on":"Spearheaded","led":"Spearheaded",
+    "helped with":"Collaborated on","assisted":"Collaborated on",
+    "fixed":"Optimized and resolved","solved":"Optimized and resolved","debugged":"Optimized and resolved",
+    "learned":"Acquired expertise in","learnt":"Acquired expertise in",
+    "added":"Successfully integrated","integrated":"Successfully integrated",
+    "changed":"Refactored","edited":"Refactored",
+    "managed":"Orchestrated","handled":"Orchestrated"
+  };
+
+  function jsImproveWording(text) {
+    if (!text) return "";
+    let improved = text;
+    Object.keys(wordingReplacements).forEach(key => {
+      const regex = new RegExp('\\b' + key + '\\b', 'gi');
+      improved = improved.replace(regex, wordingReplacements[key]);
+    });
+    return improved.charAt(0).toUpperCase() + improved.slice(1);
+  }
+
+  function updatePreview() {
+    const box = document.getElementById('resume-preview-box');
+    const tpl = document.querySelector('input[name="resume_template"]:checked').value;
+    const ai  = document.getElementById('ai-enhance-toggle').checked;
+    const headers = box.querySelectorAll('h4');
+
+    if (tpl === 'modern') {
+      box.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+      box.style.setProperty('--preview-primary', '#2563eb');
+      headers.forEach(h => h.style.borderBottomColor = '#2563eb');
+    } else if (tpl === 'professional') {
+      box.style.fontFamily = '"Times New Roman", Times, serif';
+      box.style.setProperty('--preview-primary', '#7c3aed');
+      headers.forEach(h => h.style.borderBottomColor = '#7c3aed');
+    } else if (tpl === 'fresher') {
+      box.style.fontFamily = 'Arial, sans-serif';
+      box.style.setProperty('--preview-primary', '#06b6d4');
+      headers.forEach(h => { h.style.borderBottom = 'none'; });
+      const prevEdu    = document.getElementById('prev-education-container');
+      const prevSkills = document.getElementById('prev-skills-header').closest('.mb-3');
+      const prevProj   = document.getElementById('prev-projects-container');
+      if (prevEdu && prevProj) {
+        prevEdu.parentNode.insertBefore(prevEdu, prevProj);
+        prevEdu.parentNode.insertBefore(prevSkills, prevEdu);
+      }
+    } else {
+      box.style.fontFamily = 'Arial, sans-serif';
+      box.style.setProperty('--preview-primary', '#000000');
+      headers.forEach(h => { h.style.borderBottomColor = '#ddd'; h.style.borderBottom = '1px solid #ddd'; });
+    }
+
+    const summaryEl   = document.getElementById('prev-summary-text');
+    const strengthsBox = document.getElementById('prev-strengths-box');
+    const projItems   = box.querySelectorAll('.project-item');
+
+    if (ai) {
+      summaryEl.innerText = aiSummary;
+      strengthsBox.classList.remove('d-none');
+      projItems.forEach(item => {
+        const desc = item.querySelector('.proj-desc-block');
+        if (desc) desc.innerText = jsImproveWording(item.getAttribute('data-desc'));
+      });
+    } else {
+      summaryEl.innerText = originalSummary;
+      strengthsBox.classList.add('d-none');
+      projItems.forEach(item => {
+        const desc = item.querySelector('.proj-desc-block');
+        if (desc) desc.innerText = item.getAttribute('data-desc');
+      });
+    }
+  }
+
+  function downloadPDF() {
+    const tpl = document.querySelector('input[name="resume_template"]:checked').value;
+    const ai  = document.getElementById('ai-enhance-toggle').checked;
+    window.location.href = `{% url 'generate_resume' %}?template=${tpl}&ai_enhance=${ai}`;
+  }
+
+  document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
+{% endblock %}

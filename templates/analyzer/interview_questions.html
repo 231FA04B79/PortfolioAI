@@ -1,0 +1,132 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Interview Preparation - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-question-circle text-cyan-500"></i>
+      <span>AI Interview Preparation System</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Generate specialized interview questions tailored to your selected role, skills, projects, and certifications.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Role Selector -->
+    <div class="lg:col-span-4">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+        <h2 class="text-base font-bold text-slate-950 mb-4 flex items-center gap-1.5">
+          <i class="bi bi-person-badge text-blue-600"></i>
+          <span>Select Target Role</span>
+        </h2>
+        
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <select name="target_role" class="block w-full px-3 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" required>
+              <option value="">Choose a role...</option>
+              <option value="backend developer" {% if target_role == 'Backend Developer' %}selected{% endif %}>Backend Developer</option>
+              <option value="frontend developer" {% if target_role == 'Frontend Developer' %}selected{% endif %}>Frontend Developer</option>
+              <option value="full stack developer" {% if target_role == 'Full Stack Developer' %}selected{% endif %}>Full Stack Developer</option>
+              <option value="data analyst" {% if target_role == 'Data Analyst' %}selected{% endif %}>Data Analyst</option>
+              <option value="ai engineer" {% if target_role == 'Ai Engineer' %}selected{% endif %}>AI Engineer</option>
+              <option value="cloud engineer" {% if target_role == 'Cloud Engineer' %}selected{% endif %}>Cloud Engineer</option>
+              <option value="cybersecurity analyst" {% if target_role == 'Cybersecurity Analyst' %}selected{% endif %}>Cybersecurity Analyst</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+            <i class="bi bi-cpu"></i>
+            <span>Generate Questions</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Categorized Questions -->
+    <div class="lg:col-span-8">
+      {% if questions %}
+        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+          <header class="bg-blue-600 text-white px-6 py-4">
+            <h2 class="text-base font-bold flex items-center gap-2">
+              <i class="bi bi-chat-left-text"></i>
+              <span>Interview Questions for {{ target_role }}</span>
+            </h2>
+          </header>
+          
+          <div class="p-6 space-y-6">
+            <!-- Technical Questions -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="bi bi-code-slash text-blue-600"></i>
+                <span>Technical & Domain Core</span>
+              </h3>
+              <ul class="space-y-2">
+                {% for q in questions.technical %}
+                  <li class="flex items-start gap-2 text-xs text-slate-650 leading-relaxed p-2 rounded-lg hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                    <span class="text-blue-500 mt-0.5"><i class="bi bi-dot"></i></span>
+                    <span>{{ q }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Project Questions -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="bi bi-folder-check text-emerald-600"></i>
+                <span>Portfolio & Project Context</span>
+              </h3>
+              <ul class="space-y-2">
+                {% for q in questions.project %}
+                  <li class="flex items-start gap-2 text-xs text-slate-650 leading-relaxed p-2 rounded-lg hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                    <span class="text-emerald-500 mt-0.5"><i class="bi bi-dot"></i></span>
+                    <span>{{ q }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Scenario Questions -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="bi bi-lightbulb text-amber-500"></i>
+                <span>Scenario & System Design</span>
+              </h3>
+              <ul class="space-y-2">
+                {% for q in questions.scenario %}
+                  <li class="flex items-start gap-2 text-xs text-slate-650 leading-relaxed p-2 rounded-lg hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                    <span class="text-amber-500 mt-0.5"><i class="bi bi-dot"></i></span>
+                    <span>{{ q }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- HR Questions -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="bi bi-people text-rose-600"></i>
+                <span>Behavioral & HR Indicators</span>
+              </h3>
+              <ul class="space-y-2">
+                {% for q in questions.hr %}
+                  <li class="flex items-start gap-2 text-xs text-slate-650 leading-relaxed p-2 rounded-lg hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                    <span class="text-rose-500 mt-0.5"><i class="bi bi-dot"></i></span>
+                    <span>{{ q }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="p-6 text-center rounded-xl border border-blue-200 bg-blue-50/50 text-blue-800 flex items-center gap-3">
+          <i class="bi bi-info-circle-fill fs-4 text-blue-600"></i>
+          <span class="text-sm font-semibold">Please select a target career path on the left to generate customized interview questions.</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

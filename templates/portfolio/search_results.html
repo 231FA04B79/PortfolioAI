@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Search Portfolios - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="display-6 fw-bold text-dark mb-1"><i class="bi bi-search me-2 text-primary"></i>Portfolio Search Results</h1>
+      <p class="text-muted">Showing candidate portfolios matching: <strong class="text-primary">"{{ query }}"</strong></p>
+    </div>
+  </div>
+
+  <!-- Search Results list -->
+  {% if results %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 fade-in">
+      {% for student in results %}
+        <div class="col">
+          <div class="card border-0 shadow-sm h-100 bg-white hover-zoom card-elevation">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+              
+              <div>
+                <!-- Header: Image and Name -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  {% if student.image_url %}
+                    <img src="{{ student.image_url }}" class="rounded-circle border" style="width: 55px; height: 55px; object-fit: cover;" alt="Avatar">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary text-white border d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 55px; height: 55px; font-size: 1.5rem;">
+                      {{ student.username|slice:":1"|upper }}
+                    </div>
+                  {% endif %}
+                  
+                  <div class="min-w-0">
+                    <h5 class="h6 mb-1 fw-bold text-dark text-truncate">{{ student.full_name }}</h5>
+                    <p class="text-primary mb-0 small text-truncate" style="font-size: 0.75rem;">
+                      <i class="bi bi-briefcase me-1"></i>{{ student.professional_title }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Bio or stats -->
+                <p class="text-muted small mb-4">
+                  Visit {{ student.full_name }}'s timeline to inspect their projects, key skills inventory, certifications, and educational milestones.
+                </p>
+              </div>
+
+              <!-- Footer action -->
+              <div class="border-top pt-3 d-flex justify-content-between align-items-center">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                  Portfolio Score: 
+                  <span class="badge bg-primary-soft text-primary fw-bold font-monospace">{{ student.portfolio_score }}%</span>
+                </span>
+                <a href="{{ student.url }}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">
+                  View Portfolio<i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm p-5 text-center text-muted glass-card">
+      <div class="card-body">
+        <i class="bi bi-search-heart display-1 text-muted mb-3 d-block"></i>
+        <h3 class="h5 fw-bold text-dark mb-2">No matching profiles found</h3>
+        <p class="small mb-4 mx-auto" style="max-width: 450px;">We couldn't find any portfolios matching your query. Make sure spelling is correct or try other terms like names or developer titles.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary px-4 shadow-sm">Back to Home</a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

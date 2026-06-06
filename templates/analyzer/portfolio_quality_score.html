@@ -1,0 +1,82 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Portfolio Quality Score Card - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-patch-check text-blue-600"></i>
+      <span>Portfolio Quality Index</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Evaluate your digital footprint quality rating out of 100 based on standard industry screening requirements.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Score Gauge Card (5 cols) -->
+    <div class="lg:col-span-5">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 text-center flex flex-col justify-center items-center h-full min-h-[350px]">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Aggregate Quality Score</h2>
+        
+        <div class="relative w-44 h-44 mb-5">
+          <div class="absolute inset-0 flex flex-col justify-center items-center">
+            <span class="text-4xl font-extrabold text-blue-650 font-monospace">{{ quality_score }}</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-0.5">Index Points</span>
+          </div>
+          <!-- SVG Progress Ring -->
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+            <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="text-blue-600" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ quality_score }}, 100" stroke-linecap="round" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
+
+        <div class="mb-4">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+            Rating: {{ rating }}
+          </span>
+        </div>
+        
+        <p class="text-xs text-slate-500 leading-relaxed px-4">
+          {{ summary_text }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Optimization Checklist Card (7 cols) -->
+    <div class="lg:col-span-7">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 h-full flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-950 mb-3 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+            <i class="bi bi-list-task text-blue-600"></i>
+            <span>Quality Checklist</span>
+          </h3>
+          <p class="text-xs text-slate-450 mb-4">Complete all checkpoint tasks to secure an 85+ (Excellent) portfolio score:</p>
+          
+          <div class="space-y-3">
+            {% for item in checklist %}
+              <div class="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50/50 transition-all {% if item.done %}bg-slate-50/50{% else %}bg-white{% endif %}">
+                <div class="flex items-center gap-3">
+                  {% if item.done %}
+                    <span class="text-emerald-500 flex items-center"><i class="bi bi-check-circle-fill text-lg"></i></span>
+                  {% else %}
+                    <span class="text-slate-300 flex items-center"><i class="bi bi-circle text-lg"></i></span>
+                  {% endif %}
+                  <span class="text-xs font-semibold {% if item.done %}text-slate-400 line-through{% else %}text-slate-700{% endif %}">{{ item.item }}</span>
+                </div>
+                
+                {% if item.done %}
+                  <span class="inline-flex items-center text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-monospace">Completed</span>
+                {% else %}
+                  <span class="inline-flex items-center text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded font-monospace">Pending</span>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

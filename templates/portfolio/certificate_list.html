@@ -1,0 +1,245 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Certifications{% endblock %}
+
+{% block dashboard_content %}
+<style>
+  /* ── Page Header ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .page-header-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header-sub {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.25rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+    color: #fff;
+  }
+
+  /* ── Cert Cards ── */
+  .cert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .cert-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.1rem 1.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .cert-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #10b981, #34d399);
+    border-radius: 14px 0 0 14px;
+  }
+  .cert-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.09);
+    border-color: #d0dbf0;
+  }
+
+  /* Icon */
+  .cert-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ecfdf5;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  /* Info */
+  .cert-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cert-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.2rem;
+  }
+  .cert-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .cert-org {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .cert-date-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    background: #ecfdf5;
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid #d1fae5;
+  }
+
+  /* Actions */
+  .cert-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+  .cert-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-file { color: #10b981; background: #ecfdf5; border-color: #d1fae5 !important; }
+  .btn-file:hover { background: #d1fae5; }
+  .btn-edit { color: #3b82f6; background: #eff6ff; border-color: #dbeafe !important; }
+  .btn-edit:hover { background: #dbeafe; }
+  .btn-del  { color: #ef4444; background: #fef2f2; border-color: #fee2e2 !important; }
+  .btn-del:hover  { background: #fee2e2; }
+
+  /* ── Empty State ── */
+  .empty-box {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 2px dashed #e2e8f0;
+    border-radius: 20px;
+  }
+  .empty-icon {
+    width: 72px; height: 72px;
+    background: #ecfdf5;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #10b981;
+    margin: 0 auto 1.25rem;
+  }
+  .empty-box h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+  .empty-box p  { color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+</style>
+
+<div class="container-fluid px-0">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header-title"><i class="bi bi-patch-check-fill" style="color:#10b981;"></i> My Certifications</h1>
+      <p class="page-header-sub">Manage your verified professional credentials and licensing files.</p>
+    </div>
+    <a href="{% url 'certificate_create' %}" class="btn-add">
+      <i class="bi bi-plus-circle-fill"></i> Add Certification
+    </a>
+  </div>
+
+  {% if certifications %}
+    <div class="cert-list">
+      {% for certificate in certifications %}
+        <div class="cert-card">
+
+          <!-- Icon -->
+          <div class="cert-icon"><i class="bi bi-patch-check-fill"></i></div>
+
+          <!-- Info -->
+          <div class="cert-info">
+            <div class="cert-name" title="{{ certificate.certificate_name }}">{{ certificate.certificate_name }}</div>
+            <div class="cert-meta">
+              {% if certificate.issuing_organization %}
+                <span class="cert-org"><i class="bi bi-building"></i> {{ certificate.issuing_organization }}</span>
+              {% endif %}
+              {% if certificate.issue_date %}
+                <span class="cert-date-badge"><i class="bi bi-calendar3"></i> {{ certificate.issue_date|date:'M Y' }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="cert-actions">
+            {% if certificate.certificate_file %}
+              <a href="{{ certificate.certificate_file.url }}" target="_blank" class="btn-file">
+                <i class="bi bi-file-earmark-pdf-fill"></i> View
+              </a>
+            {% endif %}
+            <a href="{% url 'certificate_edit' certificate.pk %}" class="btn-edit">
+              <i class="bi bi-pencil-fill"></i> Edit
+            </a>
+            <a href="{% url 'certificate_delete' certificate.pk %}" class="btn-del">
+              <i class="bi bi-trash3-fill"></i>
+            </a>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-box">
+      <div class="empty-icon"><i class="bi bi-patch-check-fill"></i></div>
+      <h3>No certifications uploaded</h3>
+      <p>List credentials from Google, AWS, Microsoft, or Coursera to boost your verification score.</p>
+      <a href="{% url 'certificate_create' %}" class="btn-add"><i class="bi bi-plus-lg"></i> Add Certification</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

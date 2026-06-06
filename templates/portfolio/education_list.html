@@ -1,0 +1,159 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Manage Education - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+        <i class="bi bi-mortarboard text-blue-600"></i>
+        <span>My Education</span>
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Manage your educational milestones, high schools, degrees, and scores.</p>
+    </div>
+    <a href="{% url 'education_create' %}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all flex-shrink-0">
+      <i class="bi bi-plus-lg text-base"></i>
+      <span>Add Education</span>
+    </a>
+  </div>
+
+  {% if educations %}
+
+    <!-- Education Timeline Cards -->
+    <div class="relative">
+      <!-- Vertical timeline line -->
+      <div class="absolute left-[30px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-600 via-blue-400 to-slate-200 rounded-full hidden md:block"></div>
+
+      <div class="space-y-4">
+        {% for education in educations %}
+          <!-- Timeline Card -->
+          <div class="relative flex gap-0 md:gap-6 items-start">
+
+            <!-- Timeline Dot (desktop) -->
+            <div class="hidden md:flex flex-shrink-0 w-[61px] items-start justify-center pt-5">
+              <div class="w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow-md ring-2 ring-blue-200 z-10"></div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="flex-1 glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all group">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+
+                <!-- Left: Education Info -->
+                <div class="flex items-start gap-4 flex-1 min-w-0">
+                  <!-- Icon Box -->
+                  <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+                    {% if education.education_type == 'School' %}
+                      <i class="bi bi-building text-blue-600 text-xl"></i>
+                    {% elif education.education_type == 'College' %}
+                      <i class="bi bi-mortarboard text-blue-600 text-xl"></i>
+                    {% elif education.education_type == 'University' %}
+                      <i class="bi bi-book text-blue-600 text-xl"></i>
+                    {% else %}
+                      <i class="bi bi-award text-blue-600 text-xl"></i>
+                    {% endif %}
+                  </div>
+
+                  <div class="min-w-0 flex-1">
+                    <!-- Type Badge + Year -->
+                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
+                        {{ education.education_type|default:"Other" }}
+                      </span>
+                      {% if education.completion_year %}
+                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400">
+                          <i class="bi bi-calendar3"></i> {{ education.completion_year }}
+                        </span>
+                      {% endif %}
+                    </div>
+
+                    <!-- Degree Title -->
+                    <h3 class="text-base font-bold text-slate-950 leading-snug mb-0.5 truncate">{{ education.degree }}</h3>
+
+                    <!-- College Name -->
+                    <p class="text-sm text-blue-600 font-medium flex items-center gap-1 truncate">
+                      <i class="bi bi-geo-alt text-slate-400 flex-shrink-0"></i>
+                      <span class="truncate">{{ education.college_name }}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Right: Score & Actions -->
+                <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:gap-3 flex-shrink-0">
+                  <!-- Score Badge -->
+                  {% if education.score_value %}
+                    <div class="text-center">
+                      <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{{ education.scoring_type|default:"Score" }}</span>
+                      <span class="text-2xl font-extrabold text-slate-900 font-monospace leading-none">
+                        {{ education.score_value }}{% if education.scoring_type == 'Percentage' %}<span class="text-sm text-slate-400">%</span>{% endif %}
+                      </span>
+                    </div>
+                  {% else %}
+                    <div class="text-center">
+                      <span class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-0.5">{{ education.scoring_type|default:"Score" }}</span>
+                      <span class="text-lg font-bold text-slate-200">–</span>
+                    </div>
+                  {% endif %}
+
+                  <!-- Action Buttons -->
+                  <div class="flex items-center gap-2">
+                    <a href="{% url 'education_edit' education.pk %}"
+                       class="inline-flex items-center gap-1.5 text-xs font-semibold border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+                       title="Edit">
+                      <i class="bi bi-pencil-square"></i>
+                      <span class="hidden sm:inline">Edit</span>
+                    </a>
+                    <a href="{% url 'education_delete' education.pk %}"
+                       class="inline-flex items-center gap-1.5 text-xs font-semibold border border-slate-200 text-slate-600 hover:border-rose-300 hover:text-rose-600 bg-white hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+                       title="Delete">
+                      <i class="bi bi-trash3"></i>
+                      <span class="hidden sm:inline">Delete</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Summary Stats Strip -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Records</span>
+        <span class="text-2xl font-extrabold text-blue-600 font-monospace">{{ educations|length }}</span>
+      </div>
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Score Weight</span>
+        <span class="text-2xl font-extrabold text-emerald-600 font-monospace">15%</span>
+      </div>
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-4 text-center">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Status</span>
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mt-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+          Complete
+        </span>
+      </div>
+    </div>
+
+  {% else %}
+    <!-- Empty State -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-2xl p-12 text-center flex flex-col items-center gap-4">
+      <div class="w-20 h-20 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+        <i class="bi bi-mortarboard text-blue-500 text-4xl"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-slate-950 mb-1">No Education Records Yet</h3>
+        <p class="text-sm text-slate-400 max-w-sm leading-relaxed">List your high school, diploma, or university degrees to claim the <strong class="text-blue-600">15% education score</strong> weight in your portfolio.</p>
+      </div>
+      <a href="{% url 'education_create' %}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all mt-2">
+        <i class="bi bi-plus-lg"></i>
+        <span>Add Your First Education Record</span>
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

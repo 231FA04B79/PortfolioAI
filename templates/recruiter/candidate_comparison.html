@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Candidate Comparison System - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Back Button -->
+  <div>
+    <a href="{% url 'student_search' %}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Candidate Search</span>
+    </a>
+  </div>
+
+  <!-- Header & Selector Card -->
+  <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+    <div class="mb-5">
+      <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+        <i class="bi bi-columns-gap text-blue-600"></i>
+        <span>Candidate Comparison System</span>
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Select two candidates to review their tech stacks, performance indices, and readiness side-by-side.</p>
+    </div>
+
+    <!-- Select Form -->
+    <form method="get" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div class="md:col-span-5 space-y-1.5">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Select Candidate A</label>
+        <select name="candidate_a" class="block w-full px-3 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" required>
+          <option value="">-- Choose Candidate A --</option>
+          {% for s in all_students %}
+            <option value="{{ s.username }}" {% if candidate_a.username == s.username %}selected{% endif %}>{{ s.profile.full_name|default:s.username }} ({{ s.username }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="md:col-span-5 space-y-1.5">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Select Candidate B</label>
+        <select name="candidate_b" class="block w-full px-3 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" required>
+          <option value="">-- Choose Candidate B --</option>
+          {% for s in all_students %}
+            <option value="{{ s.username }}" {% if candidate_b.username == s.username %}selected{% endif %}>{{ s.profile.full_name|default:s.username }} ({{ s.username }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+          <i class="bi bi-arrow-left-right"></i>
+          <span>Compare</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Comparison Matrix Table -->
+  {% if candidate_a and candidate_b %}
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="text-left py-4 px-5 text-xs font-bold text-slate-400 uppercase tracking-wider w-[28%]">Evaluation Attribute</th>
+              <th class="text-center py-4 px-5 text-sm font-bold text-blue-600 w-[36%]">{{ candidate_a.profile.full_name|default:candidate_a.username }}</th>
+              <th class="text-center py-4 px-5 text-sm font-bold text-blue-600 w-[36%]">{{ candidate_b.profile.full_name|default:candidate_b.username }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <!-- Professional Title -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Professional Title</td>
+              <td class="py-4 px-5 text-center text-sm font-semibold text-slate-800">{{ candidate_a.profile.professional_title|default:"Developer Candidate" }}</td>
+              <td class="py-4 px-5 text-center text-sm font-semibold text-slate-800">{{ candidate_b.profile.professional_title|default:"Developer Candidate" }}</td>
+            </tr>
+
+            <!-- Placement Readiness -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Placement Readiness</td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-emerald-600 font-monospace block mb-2">{{ candidate_a.readiness }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-emerald-500 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_a.readiness }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-emerald-600 font-monospace block mb-2">{{ candidate_b.readiness }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-emerald-500 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_b.readiness }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Portfolio Completeness -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Portfolio Completeness</td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-blue-600 font-monospace block mb-2">{{ candidate_a.p_score }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-blue-600 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_a.p_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-blue-600 font-monospace block mb-2">{{ candidate_b.p_score }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-blue-600 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_b.p_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- GitHub Rank Score -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">GitHub Rank Score</td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-slate-800 font-monospace block mb-2">{{ candidate_a.g_score }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-slate-700 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_a.g_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-center">
+                <span class="text-2xl font-extrabold text-slate-800 font-monospace block mb-2">{{ candidate_b.g_score }}%</span>
+                <div class="w-full max-w-[160px] mx-auto bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="progress-bar bg-slate-700 h-full rounded-full" role="progressbar" aria-valuenow="{{ candidate_b.g_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Technical Skills -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Technical Skills</td>
+              <td class="py-4 px-5">
+                <div class="flex flex-wrap justify-center gap-1.5">
+                  {% for s in candidate_a.skills_list %}
+                    <span class="inline-flex items-center text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded">{{ s }}</span>
+                  {% empty %}
+                    <span class="text-xs text-slate-400 italic">No registered skills.</span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-wrap justify-center gap-1.5">
+                  {% for s in candidate_b.skills_list %}
+                    <span class="inline-flex items-center text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded">{{ s }}</span>
+                  {% empty %}
+                    <span class="text-xs text-slate-400 italic">No registered skills.</span>
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+
+            <!-- Showcase Projects -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Showcase Projects</td>
+              <td class="py-4 px-5 space-y-1.5">
+                {% for p in candidate_a.projects_list %}
+                  <div class="text-xs font-semibold text-slate-800 flex items-center gap-1"><i class="bi bi-folder-symlink text-blue-500"></i> {{ p }}</div>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No projects added.</span>
+                {% endfor %}
+              </td>
+              <td class="py-4 px-5 space-y-1.5">
+                {% for p in candidate_b.projects_list %}
+                  <div class="text-xs font-semibold text-slate-800 flex items-center gap-1"><i class="bi bi-folder-symlink text-blue-500"></i> {{ p }}</div>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No projects added.</span>
+                {% endfor %}
+              </td>
+            </tr>
+
+            <!-- Certifications -->
+            <tr class="hover:bg-slate-50/50 transition-all">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Certifications</td>
+              <td class="py-4 px-5 space-y-1.5">
+                {% for c in candidate_a.certs_list %}
+                  <div class="text-xs font-semibold text-slate-800 flex items-center gap-1"><i class="bi bi-award-fill text-amber-500"></i> {{ c }}</div>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No certifications listed.</span>
+                {% endfor %}
+              </td>
+              <td class="py-4 px-5 space-y-1.5">
+                {% for c in candidate_b.certs_list %}
+                  <div class="text-xs font-semibold text-slate-800 flex items-center gap-1"><i class="bi bi-award-fill text-amber-500"></i> {{ c }}</div>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No certifications listed.</span>
+                {% endfor %}
+              </td>
+            </tr>
+
+            <!-- Profile Actions -->
+            <tr class="bg-slate-50/50">
+              <td class="py-4 px-5 text-xs font-bold text-slate-500">Profile Actions</td>
+              <td class="py-4 px-5 text-center">
+                <a href="{% url 'student_profile' candidate_a.username %}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all">
+                  <i class="bi bi-eye"></i> View Profile
+                </a>
+              </td>
+              <td class="py-4 px-5 text-center">
+                <a href="{% url 'student_profile' candidate_b.username %}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all">
+                  <i class="bi bi-eye"></i> View Profile
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  {% else %}
+    <!-- Empty State -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-10 text-center flex flex-col items-center justify-center space-y-4">
+      <div class="bg-blue-50 rounded-full p-4 text-blue-600 w-16 h-16 flex items-center justify-center">
+        <i class="bi bi-columns-gap text-3xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-950">Matrix Comparison Mode</h3>
+      <p class="text-xs text-slate-400 leading-relaxed max-w-sm">Choose two candidates from the selectors above and click Compare to build the side-by-side comparison table.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

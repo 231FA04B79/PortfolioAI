@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}PortfolioAI - AI-Powered Career Development Platform{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+  <!-- 1. Hero Section -->
+  <div class="relative rounded-3xl hero-gradient text-white p-8 md:p-16 shadow-2xl overflow-hidden animate-fade-in">
+    <!-- Neon Glow Overlay -->
+    <div class="hero-glow"></div>
+    
+    <div class="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+      <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-600/30 text-blue-300 border border-blue-500/20">
+        Transforming Careers with AI
+      </span>
+      
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white animate-float">
+        PortfolioAI
+      </h1>
+      
+      <h2 class="text-lg md:text-2xl font-light text-slate-300 max-w-2xl mx-auto">
+        AI-Powered Career Development Platform
+      </h2>
+      
+      <p class="text-sm md:text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
+        Build a job-ready professional portfolio, draft high-scoring ATS-friendly resumes, audit tech skills, parse GitHub profiles, and prepare for recruiter calls using our AI recommendations engine.
+      </p>
+
+      {% if user.is_authenticated %}
+        <!-- Large Search Bar with Autocomplete suggestions -->
+        <div class="max-w-2xl mx-auto pt-6">
+          <div class="relative">
+            <form method="get" action="{% url 'portfolio_search' %}" class="flex items-center">
+              <div class="relative w-full">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  name="q" 
+                  id="home-search-input" 
+                  class="block w-full !pl-11 !pr-24 !py-4 bg-slate-900/60 border border-slate-700 text-white placeholder-slate-400 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-md text-sm !mb-0" 
+                  placeholder="Search portfolios by candidate name, username, or stack title..." 
+                  autocomplete="off"
+                >
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
+                    Search
+                  </button>
+                </div>
+              </div>
+            </form>
+            <!-- Autocomplete Container -->
+            <div id="home-search-suggestions" class="hidden absolute top-16 left-0 right-0 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 shadow-2xl rounded-2xl py-1 z-50 text-left"></div>
+          </div>
+        </div>
+      {% endif %}
+      
+      <div class="flex flex-wrap justify-center gap-4 pt-6">
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all hover:scale-105 shadow-lg shadow-blue-600/20">
+            <i class="bi bi-speedometer2"></i> Go to My Dashboard
+          </a>
+        {% else %}
+          <a href="{% url 'register' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all hover:scale-105 shadow-lg shadow-blue-600/20">
+            <i class="bi bi-person-plus-fill"></i> Get Started Free
+          </a>
+          <a href="{% url 'login' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 font-semibold text-sm transition-all hover:bg-slate-700">
+            <i class="bi bi-box-arrow-in-right"></i> Candidate Login
+          </a>
+        {% endif %}
+        <a href="#features" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 font-semibold text-sm transition-colors">
+          Explore Features
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Platform Statistics Section -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-white/60 backdrop-blur border border-slate-200/80 p-6 rounded-2xl shadow-sm text-center">
+      <div class="text-3xl font-extrabold text-blue-600 mb-1">{{ portfolios_count }}</div>
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Portfolios Created</div>
+    </div>
+    <div class="bg-white/60 backdrop-blur border border-slate-200/80 p-6 rounded-2xl shadow-sm text-center">
+      <div class="text-3xl font-extrabold text-emerald-600 mb-1">{{ resumes_count }}</div>
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Resumes Generated</div>
+    </div>
+    <div class="bg-white/60 backdrop-blur border border-slate-200/80 p-6 rounded-2xl shadow-sm text-center">
+      <div class="text-3xl font-extrabold text-slate-800 mb-1">{{ skills_count }}</div>
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Skills Tracked</div>
+    </div>
+    <div class="bg-white/60 backdrop-blur border border-slate-200/80 p-6 rounded-2xl shadow-sm text-center">
+      <div class="text-3xl font-extrabold text-purple-600 mb-1">{{ recs_count }}</div>
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Recommendations</div>
+    </div>
+  </div>
+
+  <!-- 3. Features Section -->
+  <div class="space-y-8" id="features">
+    <div class="text-center space-y-2">
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Platform Features</h2>
+      <p class="text-slate-500 max-w-xl mx-auto text-sm">Powerful AI modules engineered to help student developer candidates stand out.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <!-- Resume Builder -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-file-earmark-pdf"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-blue-600 transition-colors">Resume Builder</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Create customized resumes tailored for B.Tech, SSC, Intermediate, or Diploma graduates instantly.</p>
+      </div>
+      
+      <!-- ATS Resume Analyzer -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-file-earmark-bar-graph"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-emerald-600 transition-colors">ATS Analyzer</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Upload existing PDF files, extract core text structures, and audit keyword coverage metrics.</p>
+      </div>
+
+      <!-- Portfolio Builder -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-cyan-50 text-cyan-600 text-xl mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-layout-text-window-reverse"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-cyan-600 transition-colors">Portfolio Builder</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Compile education lists, achievements, skills, and projects into a professional dev timeline.</p>
+      </div>
+
+      <!-- GitHub Analyzer -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-purple-50 text-purple-600 text-xl mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-github"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-purple-600 transition-colors">GitHub Analyzer</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Scan commit consistency, repository metadata, and language distributions automatically.</p>
+      </div>
+
+      <!-- Skill Gap Analyzer -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-xl mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-clipboard-data"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-amber-600 transition-colors">Skill Gap Analyzer</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Check skill sets against standard target job profiles (Frontend, Backend, DevOps, AI, etc.).</p>
+      </div>
+
+      <!-- Career Recommendations -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-red-50 text-red-600 text-xl mb-4 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-compass"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-red-600 transition-colors">Career Paths</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Find path insights, salary distributions, key certifications, and roadmap links.</p>
+      </div>
+
+      <!-- Interview Preparation -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-55 bg-blue-50 text-blue-600 text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-question-circle"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-blue-600 transition-colors">Interview Prep</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Generate conceptual questions, coding questions, and resume-based questions to practice.</p>
+      </div>
+
+      <!-- Placement Readiness -->
+      <div class="group bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <h3 class="font-bold text-slate-850 text-base mb-2 group-hover:text-emerald-600 transition-colors">Placement Readiness</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Evaluate portfolio completeness, badges, and github scores to track readiness index.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. How It Works Section -->
+  <div class="bg-white/50 backdrop-blur border border-slate-200/80 p-8 md:p-12 rounded-3xl shadow-sm space-y-10">
+    <div class="text-center space-y-2">
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">How It Works</h2>
+      <p class="text-slate-500 max-w-xl mx-auto text-sm">4 simple steps to accelerate your career growth.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+      <div class="space-y-3">
+        <div class="step-node bg-blue-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mx-auto text-lg shadow-lg shadow-blue-500/20">1</div>
+        <h4 class="font-bold text-slate-800 text-sm">Upload Resume</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">Parse your education, skills, and projects instantly using our AI parser.</p>
+      </div>
+      <div class="space-y-3">
+        <div class="step-node bg-blue-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mx-auto text-lg shadow-lg shadow-blue-500/20">2</div>
+        <h4 class="font-bold text-slate-800 text-sm">Build Portfolio</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">Design your visual dev timeline and share your public profile with recruiters.</p>
+      </div>
+      <div class="space-y-3">
+        <div class="step-node bg-blue-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mx-auto text-lg shadow-lg shadow-blue-500/20">3</div>
+        <h4 class="font-bold text-slate-800 text-sm">Analyze Skills</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">Identify stack gaps and complete recommended projects to bridge them.</p>
+      </div>
+      <div class="space-y-3">
+        <div class="step-node bg-blue-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mx-auto text-lg shadow-lg shadow-blue-500/20">4</div>
+        <h4 class="font-bold text-slate-800 text-sm">Become Job Ready</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">Draft customized ATS resumes, prepare questions, and claim career badges.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Call To Action Footer Banner -->
+  {% if not user.is_authenticated %}
+    <div class="relative rounded-3xl bg-slate-900 text-white p-8 md:p-12 text-center shadow-xl overflow-hidden" style="background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.15),transparent_40%)]"></div>
+      <div class="relative z-10 max-w-2xl mx-auto space-y-4">
+        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight">Ready to accelerate your placements?</h2>
+        <p class="text-slate-350 text-slate-300 text-sm leading-relaxed">Create your free account today and start tracking your portfolio scores.</p>
+        <div class="pt-2">
+          <a href="{% url 'register' %}" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all hover:scale-105 shadow-lg shadow-blue-600/20">
+            Join PortfolioAI Now
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Autocomplete Search suggestion box logic for homepage search
+    const homeSearch = document.getElementById('home-search-input');
+    const homeSuggs = document.getElementById('home-search-suggestions');
+    if (homeSearch && homeSuggs) {
+      let timer;
+      homeSearch.addEventListener('input', function() {
+        clearTimeout(timer);
+        const query = homeSearch.value.trim();
+        if (!query) {
+          homeSuggs.innerHTML = '';
+          homeSuggs.classList.add('hidden');
+          return;
+        }
+        timer = setTimeout(() => {
+          fetch(`/portfolio/search/?json=1&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+              homeSuggs.innerHTML = '';
+              if (data.results.length === 0) {
+                const item = document.createElement('div');
+                item.className = 'px-4 py-3 text-sm text-slate-400 bg-slate-800 rounded-2xl';
+                item.textContent = 'No matching portfolios found';
+                homeSuggs.appendChild(item);
+                homeSuggs.classList.remove('hidden');
+                return;
+              }
+              
+              data.results.forEach(res => {
+                const a = document.createElement('a');
+                a.href = res.url;
+                a.className = 'flex items-center gap-3 px-4 py-3 hover:bg-slate-700 transition-colors text-slate-200';
+                
+                const imgHtml = res.image_url 
+                  ? `<img src="${res.image_url}" class="w-8 h-8 rounded-full object-cover">`
+                  : `<div class="w-8 h-8 rounded-full bg-slate-600 text-slate-200 flex items-center justify-content-center text-xs font-bold uppercase">${res.username.slice(0, 1)}</div>`;
+                  
+                a.innerHTML = `
+                  ${imgHtml}
+                  <div class="flex-grow min-w-0">
+                    <div class="font-semibold text-sm text-slate-100 truncate">${res.full_name}</div>
+                    <div class="text-xs text-slate-400 truncate">${res.professional_title}</div>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-blue-900/40 text-blue-400 px-2.5 py-0.5 rounded border border-blue-800">${res.portfolio_score}%</span>
+                `;
+                homeSuggs.appendChild(a);
+              });
+              homeSuggs.classList.remove('hidden');
+            })
+            .catch(err => console.error(err));
+        }, 200);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (e.target !== homeSearch && e.target !== homeSuggs) {
+          homeSuggs.innerHTML = '';
+          homeSuggs.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

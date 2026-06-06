@@ -1,0 +1,209 @@
+{% extends "base_dashboard.html" %}
+{% block title %}GitHub Analyzer - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-github text-slate-800"></i>
+      <span>GitHub Developer Profile Analyzer</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Retrieve and analyze GitHub repository stats, programming languages, and contribution weight.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Search & Profile Details -->
+    <div class="lg:col-span-4 space-y-6">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+        <h2 class="text-base font-bold text-slate-950 mb-3">Analyze Account</h2>
+        <form method="post" class="space-y-3">
+          {% csrf_token %}
+          <div>
+            <input type="text" name="github_username" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="Enter GitHub username" value="{{ username }}" required>
+          </div>
+          <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+            <i class="bi bi-search"></i>
+            <span>Analyze Profile</span>
+          </button>
+        </form>
+      </div>
+
+      {% if error %}
+        <div class="p-4 rounded-xl text-sm border bg-rose-50 border-rose-200 text-rose-800 flex items-center gap-2">
+          <i class="bi bi-exclamation-octagon-fill text-rose-500 fs-5"></i>
+          <span>{{ error }}</span>
+        </div>
+      {% endif %}
+
+      {% if profile_data %}
+        <!-- Profile Card -->
+        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 text-center space-y-4">
+          {% if simulated %}
+            <div class="p-2 rounded-lg text-xs border bg-amber-50 border-amber-200 text-amber-800 flex items-center justify-center gap-1.5 font-semibold">
+              <i class="bi bi-exclamation-triangle-fill text-amber-500"></i>
+              <span>Rate-limited. Displaying simulated analytics.</span>
+            </div>
+          {% endif %}
+          
+          <div class="relative w-24 h-24 mx-auto">
+            <img src="{{ profile_data.avatar_url }}" class="rounded-full shadow-md object-cover border border-slate-100 w-full h-full" alt="Avatar">
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-bold text-slate-950">{{ profile_data.login }}</h3>
+            <p class="text-xs text-slate-400 mt-0.5">{{ profile_data.bio|default:"Developer" }}</p>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-4 my-2">
+            <div>
+              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_repos }}</span>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Repos</span>
+            </div>
+            <div>
+              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_stars }}</span>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Stars</span>
+            </div>
+            <div>
+              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_forks }}</span>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Forks</span>
+            </div>
+          </div>
+          
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Developer Grade Score</span>
+            <div class="inline-flex items-baseline gap-1">
+              <span class="text-3xl font-extrabold text-blue-600 font-monospace">{{ github_score }}</span>
+              <span class="text-xs text-slate-400">/100</span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Charts -->
+    {% if profile_data %}
+      <div class="lg:col-span-8 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Languages Doughnut Chart -->
+          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+            <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <i class="bi bi-pie-chart text-blue-600"></i>
+              <span>Language Distribution</span>
+            </h3>
+            <div class="relative h-[220px] w-full">
+              <canvas id="langChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Top Repos Bar Chart -->
+          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+            <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <i class="bi bi-bar-chart text-blue-600"></i>
+              <span>Top Repositories (Stars)</span>
+            </h3>
+            <div class="relative h-[220px] w-full">
+              <canvas id="repoChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Data container for JavaScript charts -->
+      <div id="github-data"
+           class="hidden"
+           data-lang-labels="{{ lang_labels_json }}"
+           data-lang-data="{{ lang_data_json }}"
+           data-repo-labels="{{ repo_labels_json }}"
+           data-repo-data="{{ repo_stars_json }}">
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if profile_data %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dataEl = document.getElementById('github-data');
+    const langLabels = JSON.parse(dataEl.getAttribute('data-lang-labels'));
+    const langData = JSON.parse(dataEl.getAttribute('data-lang-data'));
+    const repoLabels = JSON.parse(dataEl.getAttribute('data-repo-labels'));
+    const repoData = JSON.parse(dataEl.getAttribute('data-repo-data'));
+
+    // Language Chart (Doughnut)
+    const langCtx = document.getElementById('langChart').getContext('2d');
+    new Chart(langCtx, {
+      type: 'doughnut',
+      data: {
+        labels: langLabels,
+        datasets: [{
+          data: langData,
+          backgroundColor: [
+            '#2563EB', // Blue
+            '#06B6D4', // Cyan
+            '#10B981', // Emerald
+            '#7C3AED', // Purple
+            '#F59E0B', // Amber
+            '#F43F5E', // Rose
+            '#64748B'  // Slate
+          ],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 12,
+              font: { size: 10, family: 'Inter, sans-serif' }
+            }
+          }
+        }
+      }
+    });
+
+    // Repo Chart (Bar)
+    const repoCtx = document.getElementById('repoChart').getContext('2d');
+    new Chart(repoCtx, {
+      type: 'bar',
+      data: {
+        labels: repoLabels,
+        datasets: [{
+          label: 'Stars',
+          data: repoData,
+          backgroundColor: '#2563EB',
+          hoverBackgroundColor: '#1D4ED8',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#F1F5F9' },
+            ticks: { precision: 0, font: { size: 9, family: 'Inter, sans-serif' } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 9, family: 'Inter, sans-serif' } }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

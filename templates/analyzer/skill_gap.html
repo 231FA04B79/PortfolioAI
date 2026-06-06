@@ -1,0 +1,91 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Skill Gap Analysis - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-clipboard-data text-amber-500"></i>
+      <span>Skill Gap Analysis</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Identify key industry skill gaps and alignment indices for your targeted roles.</p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="glass-card p-6 bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl">
+    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <i class="bi bi-bullseye text-blue-600"></i>
+      <span>Select Target Role</span>
+    </h2>
+    
+    <form method="post" class="flex flex-col sm:flex-row gap-4 items-start">
+      {% csrf_token %}
+      <div class="w-full sm:flex-grow">
+        <select name="target_role" class="block w-full px-3 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" required>
+          <option value="">Choose target role...</option>
+          <option value="backend developer" {% if target_role == 'backend developer' %}selected{% endif %}>Backend Developer</option>
+          <option value="full stack developer" {% if target_role == 'full stack developer' %}selected{% endif %}>Full Stack Developer</option>
+          <option value="frontend developer" {% if target_role == 'frontend developer' %}selected{% endif %}>Frontend Developer</option>
+          <option value="data analyst" {% if target_role == 'data analyst' %}selected{% endif %}>Data Analyst</option>
+          <option value="ai engineer" {% if target_role == 'ai engineer' %}selected{% endif %}>AI Engineer</option>
+          <option value="cloud engineer" {% if target_role == 'cloud engineer' %}selected{% endif %}>Cloud Engineer</option>
+          <option value="cybersecurity analyst" {% if target_role == 'cybersecurity analyst' %}selected{% endif %}>Cybersecurity Analyst</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full sm:w-auto btn btn-primary px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2">
+        <i class="bi bi-cpu"></i>
+        <span>Analyze Gap</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Error display -->
+  {% if error %}
+    <div class="p-4 rounded-xl text-sm border bg-rose-50 border-rose-200 text-rose-800 flex items-center gap-2">
+      <i class="bi bi-exclamation-octagon-fill text-rose-500 fs-5"></i>
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+
+  <!-- Results Card -->
+  {% if target_role %}
+    <div class="glass-card p-6 bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Analysis Result</span>
+          <h3 class="text-xl font-bold text-slate-900 mt-0.5">{{ target_role|title }} Capability Gap</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-slate-500">Match Percentage:</span>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            {{ match_percentage }}%
+          </span>
+        </div>
+      </div>
+
+      {% if missing_skills %}
+        <div class="space-y-3">
+          <p class="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <i class="bi bi-exclamation-triangle text-amber-500"></i>
+            <span>Missing Skills identified for this role:</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for skill in missing_skills %}
+              <div class="flex items-center gap-2.5 p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-all">
+                <span class="text-rose-500 flex items-center"><i class="bi bi-x-circle-fill"></i></span>
+                <span class="text-sm font-medium text-slate-800">{{ skill|title }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="p-4 rounded-xl text-sm border bg-emerald-50 border-emerald-200 text-emerald-800 flex items-center gap-2.5">
+          <i class="bi bi-patch-check-fill text-emerald-600 fs-5"></i>
+          <span>Congratulations! You have all the required skills for this role.</span>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

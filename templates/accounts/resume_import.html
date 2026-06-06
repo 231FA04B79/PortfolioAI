@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+{% block title %}Resume Import Wizard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      
+      <!-- Progress Indicator -->
+      <div class="text-center mb-5">
+        <h1 class="display-6 fw-bold text-primary mb-2">AI Resume Import System</h1>
+        <p class="text-muted">Extract and review parsed data before saving it directly to your digital portfolio.</p>
+        
+        <div class="d-flex justify-content-center gap-3 align-items-center mb-2">
+          <span class="badge {% if step == 'upload' %}bg-primary{% else %}bg-secondary{% endif %} px-3 py-2">1. Upload PDF</span>
+          <span class="text-muted"><i class="bi bi-arrow-right"></i></span>
+          <span class="badge {% if step == 'review' %}bg-primary{% else %}bg-secondary{% endif %} px-3 py-2">2. Review & Confirm</span>
+        </div>
+      </div>
+
+      {% if step == 'upload' %}
+        <!-- Upload Card -->
+        <div class="card border-0 shadow-sm glass-card">
+          <div class="card-body p-5 text-center">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="parse">
+              
+              <div class="py-5 border border-2 border-dashed rounded-3 bg-light mb-4 text-center cursor-pointer" onclick="document.getElementById('file-input').click()">
+                <i class="bi bi-file-earmark-pdf display-2 text-primary mb-3"></i>
+                <h3 class="h4 mb-2">Upload your resume PDF</h3>
+                <p class="text-muted small mb-3">Select an ATS-compliant PDF resume to segment and extract details</p>
+                <div class="d-inline-block mx-auto" style="max-width: 320px;">
+                  <input type="file" id="file-input" name="resume" class="form-control" accept="application/pdf" required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                <i class="bi bi-cpu me-2"></i>Parse Resume with AI
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if step == 'review' %}
+        <!-- Review & Edit Card List -->
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save">
+
+          <!-- 1. Profile / Contact Details Card -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-primary text-white py-3 border-0">
+              <h2 class="card-title h5 mb-0"><i class="bi bi-person-badge me-2"></i>1. Profile & Contact Details</h2>
+            </div>
+            <div class="card-body p-4">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Full Name</label>
+                  <input type="text" name="full_name" class="form-control" value="{{ parsed_data.name }}" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Email Address</label>
+                  <input type="email" name="email" class="form-control" value="{{ parsed_data.email }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Phone Number</label>
+                  <input type="text" name="phone" class="form-control" value="{{ parsed_data.phone }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Location / Address</label>
+                  <input type="text" name="location" class="form-control" value="{{ parsed_data.location }}">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">GitHub URL</label>
+                  <input type="url" name="github" class="form-control" value="{{ parsed_data.github }}">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">LinkedIn URL</label>
+                  <input type="url" name="linkedin" class="form-control" value="{{ parsed_data.linkedin }}">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Portfolio Website</label>
+                  <input type="url" name="portfolio_website" class="form-control" value="{{ parsed_data.portfolio_website }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Skills Card -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-secondary text-white py-3 border-0">
+              <h2 class="card-title h5 mb-0"><i class="bi bi-tools me-2"></i>2. Extracted Core Skills</h2>
+            </div>
+            <div class="card-body p-4">
+              <label class="form-label fw-semibold">Technical Skills (comma-separated)</label>
+              <input type="text" name="skills" class="form-control" value="{{ parsed_data.skills_str }}">
+              <div class="form-text">Review and modify technical skills. Example: Python, Django, React, AWS, Docker</div>
+            </div>
+          </div>
+
+          <!-- 3. Education Section -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-success text-white py-3 border-0 d-flex justify-content-between align-items-center">
+              <h2 class="card-title h5 mb-0"><i class="bi bi-mortarboard me-2"></i>3. Education Records</h2>
+              <button type="button" class="btn btn-sm btn-light text-success" onclick="addEducation()"><i class="bi bi-plus-lg me-1"></i>Add</button>
+            </div>
+            <div class="card-body p-4" id="education-container">
+              {% for edu in parsed_data.education %}
+                <div class="card p-3 border mb-3 education-row bg-light shadow-sm">
+                  <div class="row g-3">
+                    <div class="col-md-2">
+                      <label class="form-label small fw-semibold">Type</label>
+                      <select name="edu_type[]" class="form-select edu-type-select">
+                        <option value="SSC" {% if edu.education_type == 'SSC' %}selected{% endif %}>SSC</option>
+                        <option value="Intermediate" {% if edu.education_type == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                        <option value="Diploma" {% if edu.education_type == 'Diploma' %}selected{% endif %}>Diploma</option>
+                        <option value="Undergraduate" {% if edu.education_type == 'Undergraduate' or not edu.education_type %}selected{% endif %}>Undergraduate</option>
+                        <option value="Postgraduate" {% if edu.education_type == 'Postgraduate' %}selected{% endif %}>Postgraduate</option>
+                        <option value="PhD" {% if edu.education_type == 'PhD' %}selected{% endif %}>PhD</option>
+                        <option value="Other" {% if edu.education_type == 'Other' %}selected{% endif %}>Other</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">Degree / Certification</label>
+                      <input type="text" name="edu_degree[]" class="form-control" value="{{ edu.degree }}" required>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">College / School Name</label>
+                      <input type="text" name="edu_college[]" class="form-control" value="{{ edu.college_name }}" required>
+                    </div>
+                    <div class="col-md-1">
+                      <label class="form-label small fw-semibold">Year</label>
+                      <input type="text" name="edu_year[]" class="form-control" value="{{ edu.completion_year }}">
+                    </div>
+                    <div class="col-md-1 edu-scoring-col" {% if edu.education_type == 'SSC' or edu.education_type == 'Intermediate' or edu.education_type == 'Undergraduate' %}style="display:none;"{% endif %}>
+                      <label class="form-label small fw-semibold">Scoring</label>
+                      <select name="edu_scoring_type[]" class="form-select edu-scoring-select">
+                        <option value="CGPA" {% if edu.scoring_type == 'CGPA' or not edu.scoring_type %}selected{% endif %}>CGPA</option>
+                        <option value="Percentage" {% if edu.scoring_type == 'Percentage' %}selected{% endif %}>Percentage</option>
+                      </select>
+                    </div>
+                    <div class="col-md-1">
+                      <label class="form-label small fw-semibold score-label">
+                        {% if edu.education_type == 'SSC' or edu.education_type == 'Intermediate' %}
+                          Percentage (%)
+                        {% else %}
+                          CGPA / Score
+                        {% endif %}
+                      </label>
+                      <input type="text" name="edu_cgpa[]" class="form-control" value="{{ edu.score_value }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                      <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.education-row').remove()"><i class="bi bi-trash"></i></button>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0 no-data-text">No education entries extracted. Click Add to insert a new education record.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 4. Projects Section -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-info text-white py-3 border-0 d-flex justify-content-between align-items-center">
+              <h2 class="card-title h5 mb-0"><i class="bi bi-code-slash me-2"></i>4. Project Portfolio</h2>
+              <button type="button" class="btn btn-sm btn-light text-info" onclick="addProject()"><i class="bi bi-plus-lg me-1"></i>Add</button>
+            </div>
+            <div class="card-body p-4" id="project-container">
+              {% for proj in parsed_data.projects %}
+                <div class="card p-3 border mb-3 project-row bg-light shadow-sm">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold">Project Title</label>
+                      <input type="text" name="proj_title[]" class="form-control" value="{{ proj.title }}" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold">Technologies Used</label>
+                      <input type="text" name="proj_tech[]" class="form-control" value="{{ proj.tech_stack }}">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">Duration / Date</label>
+                      <input type="text" name="proj_duration[]" class="form-control" value="{{ proj.duration }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                      <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.project-row').remove()"><i class="bi bi-trash"></i></button>
+                    </div>
+                    <div class="col-md-7">
+                      <label class="form-label small fw-semibold">Project Description</label>
+                      <textarea name="proj_desc[]" class="form-control" rows="2">{{ proj.description }}</textarea>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold">GitHub Repository URL</label>
+                      <input type="url" name="proj_github[]" class="form-control" value="{{ proj.github_link }}">
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0 no-data-text">No projects extracted. Click Add to insert a new project record.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 5. Certifications Section -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-warning text-dark py-3 border-0 d-flex justify-content-between align-items-center">
+              <h2 class="card-title h5 mb-0 fw-bold"><i class="bi bi-patch-check me-2"></i>5. Professional Certifications</h2>
+              <button type="button" class="btn btn-sm btn-light text-dark" onclick="addCertification()"><i class="bi bi-plus-lg me-1"></i>Add</button>
+            </div>
+            <div class="card-body p-4" id="certification-container">
+              {% for cert in parsed_data.certifications %}
+                <div class="card p-3 border mb-3 certification-row bg-light shadow-sm">
+                  <div class="row g-3">
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">Certificate Name</label>
+                      <input type="text" name="cert_name[]" class="form-control" value="{{ cert.certificate_name }}" required>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">Issuing Organization</label>
+                      <input type="text" name="cert_org[]" class="form-control" value="{{ cert.issuing_organization }}">
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label small fw-semibold">Date Issued (YYYY-MM)</label>
+                      <input type="text" name="cert_date[]" class="form-control" value="{{ cert.issue_date }}">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-semibold">Credential ID</label>
+                      <input type="text" name="cert_credential[]" class="form-control" value="{{ cert.credential_id }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                      <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.certification-row').remove()"><i class="bi bi-trash"></i></button>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0 no-data-text">No certifications extracted. Click Add to insert a new certification record.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 6. Achievements Section -->
+          <div class="card border-0 shadow-sm mb-4 glass-card">
+            <div class="card-header bg-danger text-white py-3 border-0 d-flex justify-content-between align-items-center">
+              <h2 class="card-title h5 mb-0"><i class="bi bi-trophy me-2"></i>6. Awards & Achievements</h2>
+              <button type="button" class="btn btn-sm btn-light text-danger" onclick="addAchievement()"><i class="bi bi-plus-lg me-1"></i>Add</button>
+            </div>
+            <div class="card-body p-4" id="achievement-container">
+              {% for ach in parsed_data.achievements %}
+                <div class="card p-3 border mb-3 achievement-row bg-light shadow-sm">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold">Achievement Title</label>
+                      <input type="text" name="ach_title[]" class="form-control" value="{{ ach.title }}" required>
+                    </div>
+                    <div class="col-md-7">
+                      <label class="form-label small fw-semibold">Achievement / Award Description</label>
+                      <input type="text" name="ach_desc[]" class="form-control" value="{{ ach.description }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                      <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.achievement-row').remove()"><i class="bi bi-trash"></i></button>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0 no-data-text">No achievements extracted. Click Add to insert a new achievement record.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Confirm Actions -->
+          <div class="d-flex justify-content-between py-4 border-top mt-4">
+            <a href="{% url 'resume_import' %}" class="btn btn-outline-secondary btn-lg px-4">Start Over</a>
+            <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+              <i class="bi bi-check-circle-fill me-2"></i>Confirm & Save to Portfolio
+            </button>
+          </div>
+        </form>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Add Education card template
+  function addEducation() {
+    const container = document.getElementById('education-container');
+    const noDataText = container.querySelector('.no-data-text');
+    if (noDataText) noDataText.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'card p-3 border mb-3 education-row bg-light shadow-sm';
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Type</label>
+          <select name="edu_type[]" class="form-select edu-type-select">
+            <option value="SSC">SSC</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Diploma">Diploma</option>
+            <option value="Undergraduate" selected>Undergraduate</option>
+            <option value="Postgraduate">Postgraduate</option>
+            <option value="PhD">PhD</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Degree / Certification</label>
+          <input type="text" name="edu_degree[]" class="form-control" placeholder="B.Tech" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">College / School Name</label>
+          <input type="text" name="edu_college[]" class="form-control" placeholder="University Name" required>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small fw-semibold">Year</label>
+          <input type="text" name="edu_year[]" class="form-control" placeholder="2026">
+        </div>
+        <div class="col-md-1 edu-scoring-col" style="display:none;">
+          <label class="form-label small fw-semibold">Scoring</label>
+          <select name="edu_scoring_type[]" class="form-select edu-scoring-select">
+            <option value="CGPA" selected>CGPA</option>
+            <option value="Percentage">Percentage</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small fw-semibold score-label">CGPA / Score</label>
+          <input type="text" name="edu_cgpa[]" class="form-control" placeholder="9.0">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.education-row').remove()"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Interactivity for dynamic education cards
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('edu-type-select')) {
+      const row = e.target.closest('.education-row');
+      const type = e.target.value;
+      const scoringSelect = row.querySelector('.edu-scoring-select');
+      const scoreLabel = row.querySelector('.score-label');
+      const scoreInput = row.querySelector('input[name="edu_cgpa[]"]');
+      const scoringCol = row.querySelector('.edu-scoring-col');
+      
+      if (type === 'Undergraduate') {
+        scoringSelect.value = 'CGPA';
+        scoringCol.style.display = 'none';
+        scoreLabel.textContent = 'CGPA / Score';
+        scoreInput.placeholder = 'e.g. 8.5';
+      } else if (type === 'SSC' || type === 'Intermediate') {
+        scoringSelect.value = 'Percentage';
+        scoringCol.style.display = 'none';
+        scoreLabel.textContent = 'Percentage (%)';
+        scoreInput.placeholder = 'e.g. 92.5';
+      } else {
+        scoringCol.style.display = 'block';
+        if (scoringSelect.value === 'CGPA') {
+          scoreLabel.textContent = 'CGPA / Score';
+          scoreInput.placeholder = 'e.g. 9.0';
+        } else {
+          scoreLabel.textContent = 'Percentage (%)';
+          scoreInput.placeholder = 'e.g. 85';
+        }
+      }
+    }
+    
+    if (e.target.classList.contains('edu-scoring-select')) {
+      const row = e.target.closest('.education-row');
+      const scoringType = e.target.value;
+      const scoreLabel = row.querySelector('.score-label');
+      const scoreInput = row.querySelector('input[name="edu_cgpa[]"]');
+      
+      if (scoringType === 'CGPA') {
+        scoreLabel.textContent = 'CGPA / Score';
+        scoreInput.placeholder = 'e.g. 9.0';
+      } else {
+        scoreLabel.textContent = 'Percentage (%)';
+        scoreInput.placeholder = 'e.g. 85';
+      }
+    }
+  });
+
+  // Add Project card template
+  function addProject() {
+    const container = document.getElementById('project-container');
+    const noDataText = container.querySelector('.no-data-text');
+    if (noDataText) noDataText.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'card p-3 border mb-3 project-row bg-light shadow-sm';
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Project Title</label>
+          <input type="text" name="proj_title[]" class="form-control" placeholder="E-commerce Web App" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Technologies Used</label>
+          <input type="text" name="proj_tech[]" class="form-control" placeholder="Django, React, Postgre">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Duration / Date</label>
+          <input type="text" name="proj_duration[]" class="form-control" placeholder="3 Months">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.project-row').remove()"><i class="bi bi-trash"></i></button>
+        </div>
+        <div class="col-md-7">
+          <label class="form-label small fw-semibold">Project Description</label>
+          <textarea name="proj_desc[]" class="form-control" rows="2" placeholder="Briefly explain project goals and outcomes..."></textarea>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">GitHub Repository URL</label>
+          <input type="url" name="proj_github[]" class="form-control" placeholder="https://github.com/...">
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Add Certification card template
+  function addCertification() {
+    const container = document.getElementById('certification-container');
+    const noDataText = container.querySelector('.no-data-text');
+    if (noDataText) noDataText.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'card p-3 border mb-3 certification-row bg-light shadow-sm';
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Certificate Name</label>
+          <input type="text" name="cert_name[]" class="form-control" placeholder="AWS Solution Architect" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Issuing Organization</label>
+          <input type="text" name="cert_org[]" class="form-control" placeholder="Amazon Web Services">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Date Issued (YYYY-MM)</label>
+          <input type="text" name="cert_date[]" class="form-control" placeholder="2025-05">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Credential ID</label>
+          <input type="text" name="cert_credential[]" class="form-control" placeholder="AWS-12345">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.certification-row').remove()"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Add Achievement card template
+  function addAchievement() {
+    const container = document.getElementById('achievement-container');
+    const noDataText = container.querySelector('.no-data-text');
+    if (noDataText) noDataText.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'card p-3 border mb-3 achievement-row bg-light shadow-sm';
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Achievement Title</label>
+          <input type="text" name="ach_title[]" class="form-control" placeholder="1st Place Hackathon" required>
+        </div>
+        <div class="col-md-7">
+          <label class="form-label small fw-semibold">Achievement / Award Description</label>
+          <input type="text" name="ach_desc[]" class="form-control" placeholder="Won first place out of 50 teams at TechCon Hackathon.">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button type="button" class="btn btn-outline-danger w-100" onclick="this.closest('.achievement-row').remove()"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+</script>
+{% endblock %}

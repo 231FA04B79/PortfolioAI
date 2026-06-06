@@ -1,0 +1,279 @@
+{% extends "base_dashboard.html" %}
+{% block title %}AI Job Description Analyzer - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-cpu text-blue-500"></i>
+      <span>Job Description Analyzer & Match Engine</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Paste or upload a target job description to run our ATS Match Engine and generate a week-by-week learning roadmap.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Input Form & History -->
+    <div class="lg:col-span-4 space-y-6">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+        <h3 class="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <i class="bi bi-plus-circle text-blue-600"></i>
+          <span>Analyze New Job</span>
+        </h3>
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+          {% csrf_token %}
+          
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Job Title / Target Role</label>
+            <input type="text" name="job_title" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="e.g. Backend Developer" required>
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Paste Job Description</label>
+            <textarea name="job_description" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" rows="6" placeholder="Paste the text requirements here..."></textarea>
+          </div>
+          
+          <div class="relative flex py-2 items-center">
+            <div class="flex-grow border-t border-slate-200"></div>
+            <span class="flex-shrink mx-4 text-slate-400 text-xs font-bold uppercase">OR</span>
+            <div class="flex-grow border-t border-slate-200"></div>
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider"><i class="bi bi-file-earmark-pdf mr-1"></i>Upload PDF Description</label>
+            <input type="file" name="jd_file" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" accept=".pdf">
+          </div>
+          
+          <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+            <i class="bi bi-lightning-charge"></i>
+            <span>Analyze & Match</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- History List -->
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+        <h3 class="text-base font-bold text-slate-950 mb-3 flex items-center gap-2">
+          <i class="bi bi-clock-history text-blue-600"></i>
+          <span>Previous Analyses</span>
+        </h3>
+        {% if previous_jds %}
+          <div class="divide-y divide-slate-100 max-h-[250px] overflow-y-auto pr-1">
+            {% for item in previous_jds %}
+              <a href="?jd_id={{ item.id }}" class="flex justify-between items-center py-2.5 hover:bg-slate-50 rounded px-2 transition-all {% if selected_jd.id == item.id %}bg-blue-50/50 text-blue-700 font-semibold{% else %}text-slate-650{% endif %}">
+                <span class="text-xs truncate max-w-[150px]">{{ item.title }}</span>
+                <span class="text-[10px] font-monospace bg-slate-100 border border-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded">{{ item.created_at|date:"M d" }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-slate-400 italic">No job descriptions analyzed yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Results & Roadmap -->
+    <div class="lg:col-span-8 space-y-6">
+      {% if selected_jd %}
+        <!-- Match Engine Results Banner -->
+        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-4 border-b border-slate-100">
+            <div class="space-y-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                Analysis Result
+              </span>
+              <h2 class="text-lg font-bold text-slate-950 mt-0.5">{{ selected_jd.title }}</h2>
+              <p class="text-xs text-slate-400 flex flex-wrap gap-x-2 gap-y-1">
+                <span><i class="bi bi-calendar-event mr-1"></i>Analyzed: {{ selected_jd.created_at|date:"F d, Y" }}</span>
+                <span>&bull;</span>
+                <span>Experience: <strong>{{ selected_jd.extracted_experience }}</strong></span>
+              </p>
+            </div>
+            
+            <div class="flex-shrink-0 flex items-center justify-center relative w-24 h-24">
+              <div class="absolute inset-0 flex flex-col justify-center items-center">
+                <span class="text-2xl font-extrabold text-blue-600 font-monospace">{{ match_details.match_score }}%</span>
+                <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400">Match</span>
+              </div>
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="text-blue-600" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ match_details.match_score }}, 100" stroke-linecap="round" fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Matched vs Missing Breakdown -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5">
+            <div class="space-y-3 md:border-r border-slate-100 md:pr-6">
+              <h4 class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Matched Competencies</span>
+              </h4>
+              <div class="flex flex-wrap gap-1.5">
+                {% for s in match_details.matched_skills %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded"><i class="bi bi-check mr-0.5"></i>{{ s }}</span>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No direct skill matches found.</span>
+                {% endfor %}
+                {% for t in match_details.matched_technologies %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded"><i class="bi bi-check mr-0.5"></i>{{ t }}</span>
+                {% endfor %}
+                {% for c in match_details.matched_certifications %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded"><i class="bi bi-check mr-0.5"></i>{{ c }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold text-rose-600 flex items-center gap-1.5">
+                <i class="bi bi-slash-circle-fill"></i>
+                <span>Missing / Gaps</span>
+              </h4>
+              <div class="flex flex-wrap gap-1.5">
+                {% for s in match_details.missing_skills %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2 py-0.5 rounded"><i class="bi bi-x mr-0.5"></i>{{ s }}</span>
+                {% empty %}
+                  <span class="text-xs text-slate-400 italic">No major skill gaps detected.</span>
+                {% endfor %}
+                {% for t in match_details.missing_technologies %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2 py-0.5 rounded"><i class="bi bi-x mr-0.5"></i>{{ t }}</span>
+                {% endfor %}
+                {% for c in match_details.missing_certifications %}
+                  <span class="inline-flex items-center text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2 py-0.5 rounded"><i class="bi bi-x mr-0.5"></i>{{ c }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Soft skills & Keywords -->
+          {% if selected_jd.extracted_soft_skills or selected_jd.extracted_keywords %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4 mt-4">
+              {% if selected_jd.extracted_soft_skills %}
+                <div class="text-xs space-y-1">
+                  <span class="font-bold text-slate-500">Required Soft Skills:</span>
+                  <p class="text-slate-700 leading-normal">{{ selected_jd.extracted_soft_skills|join:", " }}</p>
+                </div>
+              {% endif %}
+              {% if selected_jd.extracted_keywords %}
+                <div class="text-xs space-y-1">
+                  <span class="font-bold text-slate-500">Industry Keywords:</span>
+                  <p class="text-slate-700 leading-normal">{{ selected_jd.extracted_keywords|join:", " }}</p>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Recommendations Banner -->
+        <div class="glass-card bg-slate-50/80 backdrop-blur border border-slate-200 border-l-4 border-l-blue-600 rounded-xl p-5">
+          <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <i class="bi bi-robot text-blue-600"></i>
+            <span>AI Improvement Recommendations</span>
+          </h3>
+          <ul class="space-y-2">
+            {% for rec in match_details.recommendations %}
+              <li class="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
+                <span class="text-blue-500 mt-0.5"><i class="bi bi-arrow-right-circle-fill"></i></span>
+                <span>{{ rec }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Timeline Roadmap Cards -->
+        {% if selected_roadmap %}
+          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-950 flex items-center gap-2">
+                <i class="bi bi-signpost-split text-blue-600"></i>
+                <span>Personalized Learning Roadmap</span>
+              </h3>
+              <span class="inline-flex items-center text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded">Timeline & Progress</span>
+            </div>
+            
+            <!-- Timeline nodes -->
+            <div class="relative pl-6 border-l-2 border-slate-200 ml-3 space-y-6">
+              {% for step in selected_roadmap.steps.all %}
+                <div class="relative">
+                  <!-- Timeline indicator circle -->
+                  <div class="absolute -left-[35px] top-1.5 bg-blue-600 text-white rounded-full w-6 h-6 border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                    {{ step.week_number }}
+                  </div>
+                  
+                  <div class="glass-card bg-white border border-slate-150 rounded-xl p-4 shadow-sm hover:shadow transition-all">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="space-y-1">
+                        <span class="inline-flex text-[9px] font-bold uppercase tracking-wider bg-slate-100 border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded mb-1">Week {{ step.week_number }}</span>
+                        <h4 class="text-sm font-bold text-slate-900" id="step-title-{{ step.id }}" style="{% if step.completed %}text-decoration: line-through; opacity: 0.6;{% endif %}">{{ step.title }}</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed" id="step-desc-{{ step.id }}" style="{% if step.completed %}opacity: 0.6;{% endif %}">{{ step.description }}</p>
+                      </div>
+                      
+                      <!-- Interactive Checkbox -->
+                      <div class="flex items-center">
+                        <input class="step-checkbox rounded text-blue-600 border-slate-350 focus:ring-blue-500" type="checkbox" data-step-id="{{ step.id }}" id="step-check-{{ step.id }}" {% if step.completed %}checked{% endif %} style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+      {% else %}
+        <!-- Empty State -->
+        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-8 text-center flex flex-col justify-center items-center min-h-[350px] space-y-4">
+          <div class="bg-blue-50 rounded-full p-4 text-blue-600 w-16 h-16 flex items-center justify-center">
+            <i class="bi bi-file-earmark-code text-3xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-950">No Job Description Analyzed</h3>
+          <p class="text-xs text-slate-400 leading-relaxed max-w-sm">
+            Paste a target role description or upload a requirements PDF in the left column. Our AI matching engine will score your profile and build a step-by-step roadmap to close skill gaps.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ajax Toggle Completion Status
+    const checkboxes = document.querySelectorAll('.step-checkbox');
+    checkboxes.forEach(box => {
+      box.addEventListener('change', function() {
+        const stepId = this.getAttribute('data-step-id');
+        const titleEl = document.getElementById(`step-title-${stepId}`);
+        const descEl = document.getElementById(`step-desc-${stepId}`);
+        
+        fetch(`/analyzer/roadmap/step/${stepId}/toggle/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            if (data.completed) {
+              titleEl.style.textDecoration = 'line-through';
+              titleEl.style.opacity = '0.6';
+              descEl.style.opacity = '0.6';
+            } else {
+              titleEl.style.textDecoration = 'none';
+              titleEl.style.opacity = '1.0';
+              descEl.style.opacity = '1.0';
+            }
+          }
+        })
+        .catch(err => console.error('Error toggling step status:', err));
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% load static %}
+<nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-8">
+        <a class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" href="{% url 'home' %}">
+          PortfolioAI
+        </a>
+        
+        <!-- Desktop Nav Items -->
+        <div class="hidden lg:flex items-center gap-6">
+          <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="{% url 'home' %}">Home</a>
+          
+          {% if user.is_authenticated %}
+            <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="{% url 'dashboard' %}">Dashboard</a>
+            
+            <!-- Portfolio Dropdown -->
+            <div class="relative nav-dropdown-wrapper">
+              <button class="flex items-center gap-1 text-sm font-medium text-slate-300 hover:text-white transition-colors py-2 focus:outline-none" data-dropdown-trigger="portfolio-menu">
+                Portfolio <i class="bi bi-chevron-down text-[10px]"></i>
+              </button>
+              <div id="portfolio-menu" class="hidden absolute left-0 mt-2 w-56 rounded-lg bg-slate-800 border border-slate-700 shadow-xl py-2 z-50 animate-fade-in">
+                <a class="block px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Builder Components</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'education_list' %}"><i class="bi bi-mortarboard text-blue-400"></i> Education</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'skill_list' %}"><i class="bi bi-tools text-purple-400"></i> Skills</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'project_list' %}"><i class="bi bi-code-slash text-accent"></i> Projects</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'certificate_list' %}"><i class="bi bi-patch-check text-yellow-400"></i> Certifications</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'achievement_list' %}"><i class="bi bi-trophy text-red-400"></i> Achievements</a>
+                <div class="border-t border-slate-700 my-1"></div>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'resume_import' %}"><i class="bi bi-file-earmark-arrow-up text-blue-400"></i> Import Resume (AI)</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'ats_resume_builder' %}"><i class="bi bi-file-earmark-pdf text-purple-400"></i> ATS Resume Builder</a>
+              </div>
+            </div>
+            
+            <!-- Analyzer Dropdown -->
+            <div class="relative nav-dropdown-wrapper">
+              <button class="flex items-center gap-1 text-sm font-medium text-slate-300 hover:text-white transition-colors py-2 focus:outline-none" data-dropdown-trigger="analyzer-menu">
+                Analyzer <i class="bi bi-chevron-down text-[10px]"></i>
+              </button>
+              <div id="analyzer-menu" class="hidden absolute left-0 mt-2 w-64 max-h-[420px] overflow-y-auto rounded-lg bg-slate-800 border border-slate-700 shadow-xl py-2 z-50 animate-fade-in">
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors font-semibold" href="{% url 'analytics_dashboard' %}"><i class="bi bi-graph-up-arrow text-emerald-400"></i> Analytics Dashboard</a>
+                <div class="border-t border-slate-700 my-1"></div>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'job_description_analyzer' %}"><i class="bi bi-file-earmark-check text-blue-400"></i> JD Analyzer</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'portfolio_review' %}"><i class="bi bi-shield-check text-purple-400"></i> AI Portfolio Audit</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'ai_profile_generator' %}"><i class="bi bi-chat-quote text-cyan-400"></i> AI Profile Copywriter</a>
+                <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'portfolio_quality_score' %}"><i class="bi bi-trophy text-yellow-400"></i> Quality Score</a>
+                <div class="border-t border-slate-700 my-1"></div>
+                <a class="block px-4 py-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">AI Modules</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'github_analyzer' %}">GitHub Analyzer</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'resume_analyzer' %}">Resume Analyzer</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'skill_gap' %}">Skill Gap</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'career_recommendation' %}">Career Paths</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'portfolio_score' %}">Portfolio Score</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'coding_analyzer' %}">Coding Profiles</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'placement_readiness' %}">Placement Readiness</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'project_recommender' %}">Project Recommender</a>
+                <a class="block px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white" href="{% url 'interview_questions' %}">Interview Prep</a>
+              </div>
+            </div>
+            
+            {% if user.is_staff %}
+              <!-- Recruiter Dropdown -->
+              <div class="relative nav-dropdown-wrapper">
+                <button class="flex items-center gap-1 text-sm font-medium text-slate-300 hover:text-white transition-colors py-2 focus:outline-none" data-dropdown-trigger="recruiter-menu">
+                  Recruiter <i class="bi bi-chevron-down text-[10px]"></i>
+                </button>
+                <div id="recruiter-menu" class="hidden absolute left-0 mt-2 w-56 rounded-lg bg-slate-800 border border-slate-700 shadow-xl py-2 z-50 animate-fade-in">
+                  <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'recruiter_dashboard' %}"><i class="bi bi-speedometer2 text-blue-400"></i> Dashboard</a>
+                  <a class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'compare_candidates' %}"><i class="bi bi-people text-purple-400"></i> Compare Candidates</a>
+                </div>
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Right Side Actions -->
+      <div class="flex items-center gap-4">
+        
+        {% if user.is_authenticated %}
+          <!-- Global Search Input (Tailwind Redesign) -->
+          <div class="relative hidden sm:block w-60">
+            <form method="get" action="{% url 'portfolio_search' %}" class="flex items-center">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                <i class="bi bi-search text-xs"></i>
+              </span>
+              <input 
+                class="block w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-400 text-xs rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                type="search" 
+                name="q" 
+                placeholder="Search portfolios..." 
+                autocomplete="off" 
+                id="navbar-search-input"
+              >
+            </form>
+            <!-- Suggestions Container -->
+            <div id="navbar-search-suggestions" class="hidden absolute top-10 left-0 right-0 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 shadow-2xl rounded-lg py-1 z-50"></div>
+          </div>
+          
+          <!-- Avatar User Dropdown Menu -->
+          <div class="relative nav-dropdown-wrapper">
+            <button class="flex items-center focus:outline-none" data-dropdown-trigger="avatar-menu">
+              {% if user.profile.profile_image %}
+                <img src="{{ user.profile.profile_image.url }}" class="w-9 w-9 rounded-full border-2 border-slate-700 hover:border-blue-500 object-cover transition-colors" alt="{{ user.username }}">
+              {% else %}
+                <div class="w-9 h-9 rounded-full bg-slate-700 border-2 border-slate-600 text-slate-200 flex items-center justify-content-center text-xs font-bold hover:border-blue-500 transition-colors">
+                  {{ user.profile.initials }}
+                </div>
+              {% endif %}
+            </button>
+            
+            <div id="avatar-menu" class="hidden absolute right-0 mt-2 w-60 rounded-lg bg-slate-850 bg-slate-800 border border-slate-700 shadow-2xl py-2 z-50 animate-fade-in text-slate-300">
+              <!-- User Info header -->
+              <div class="px-4 py-2 border-b border-slate-700 mb-2">
+                <div class="font-semibold text-slate-100 text-xs truncate">{{ user.profile.full_name|default:user.username }}</div>
+                <div class="text-[10px] text-slate-400 truncate">{{ user.email }}</div>
+              </div>
+              
+              <div class="px-4 py-1 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">Profile</div>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'profile' %}"><i class="bi bi-person text-blue-400"></i> View Profile</a>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'edit_profile' %}"><i class="bi bi-pencil text-purple-400"></i> Edit Profile</a>
+              
+              <div class="border-t border-slate-700 my-1"></div>
+              <div class="px-4 py-1 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">Settings</div>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'account_settings' %}"><i class="bi bi-gear text-slate-400"></i> Account Settings</a>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'account_settings' %}?tab=security"><i class="bi bi-shield-lock text-red-400"></i> Change Password</a>
+              
+              <div class="border-t border-slate-700 my-1"></div>
+              <div class="px-4 py-1 text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">Gamification</div>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors" href="{% url 'achievements_dashboard' %}"><i class="bi bi-award text-yellow-500"></i> View Badges</a>
+              
+              <div class="border-t border-slate-700 my-1"></div>
+              <a class="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-slate-700 hover:text-white transition-colors text-red-400 hover:text-red-300" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </div>
+          </div>
+          
+        {% else %}
+          <!-- Guest Navigation buttons -->
+          <div class="flex items-center gap-3">
+            <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="{% url 'login' %}">Login</a>
+            <a class="inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-lg" href="{% url 'register' %}">
+              Register
+            </a>
+          </div>
+        {% endif %}
+        
+        <!-- Mobile Menu Toggle Button -->
+        <button class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white focus:outline-none" id="mobile-menu-toggle">
+          <i class="bi bi-list text-2xl"></i>
+        </button>
+        
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- Mobile Menu Panels -->
+  <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-800 bg-slate-900 px-4 pt-2 pb-4 space-y-1">
+    <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'home' %}">Home</a>
+    {% if user.is_authenticated %}
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'dashboard' %}">Dashboard</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'profile' %}">View Profile</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'edit_profile' %}">Edit Profile</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'account_settings' %}">Account Settings</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'achievements_dashboard' %}">View Badges</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-slate-800 hover:text-white" href="{% url 'logout' %}">Logout</a>
+    {% else %}
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white" href="{% url 'login' %}">Login</a>
+      <a class="block px-3 py-2 rounded-md text-base font-medium text-blue-400 hover:bg-slate-800 hover:text-white" href="{% url 'register' %}">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- JavaScript to control navbar interactive parts -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Dropdown togglers script
+    const dropdownTriggers = document.querySelectorAll('[data-dropdown-trigger]');
+    
+    dropdownTriggers.forEach(trigger => {
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const targetId = trigger.getAttribute('data-dropdown-trigger');
+        const targetMenu = document.getElementById(targetId);
+        
+        // Hide other open dropdowns first
+        document.querySelectorAll('[id$="-menu"]').forEach(menu => {
+          if (menu.id !== targetId) {
+            menu.classList.add('hidden');
+          }
+        });
+        
+        // Toggle target
+        targetMenu.classList.toggle('hidden');
+      });
+    });
+    
+    // Close dropdowns on clicking anywhere outside
+    document.addEventListener('click', function() {
+      document.querySelectorAll('[id$="-menu"]').forEach(menu => {
+        menu.classList.add('hidden');
+      });
+    });
+    
+    // Mobile menu toggler
+    const mobileToggler = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileToggler && mobileMenu) {
+      mobileToggler.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+    
+    // Autocomplete Search suggestion box logic
+    const navSearch = document.getElementById('navbar-search-input');
+    const navSuggs = document.getElementById('navbar-search-suggestions');
+    if (navSearch && navSuggs) {
+      let timer;
+      navSearch.addEventListener('input', function() {
+        clearTimeout(timer);
+        const query = navSearch.value.trim();
+        if (!query) {
+          navSuggs.innerHTML = '';
+          navSuggs.classList.add('hidden');
+          return;
+        }
+        timer = setTimeout(() => {
+          fetch(`/portfolio/search/?json=1&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+              navSuggs.innerHTML = '';
+              if (data.results.length === 0) {
+                const item = document.createElement('div');
+                item.className = 'px-4 py-2 text-xs text-slate-500';
+                item.textContent = 'No portfolios found';
+                navSuggs.appendChild(item);
+                navSuggs.classList.remove('hidden');
+                return;
+              }
+              
+              data.results.forEach(res => {
+                const a = document.createElement('a');
+                a.href = res.url;
+                a.className = 'flex items-center gap-3 px-4 py-2 hover:bg-slate-700 transition-colors text-slate-200';
+                
+                const imgHtml = res.image_url 
+                  ? `<img src="${res.image_url}" class="w-6 h-6 rounded-full object-cover">`
+                  : `<div class="w-6 h-6 rounded-full bg-slate-600 text-slate-200 flex items-center justify-content-center text-[10px] font-bold uppercase">${res.username.slice(0, 1)}</div>`;
+                  
+                a.innerHTML = `
+                  ${imgHtml}
+                  <div class="flex-grow min-w-0">
+                    <div class="font-semibold text-xs text-slate-100 truncate">${res.full_name}</div>
+                    <div class="text-[9px] text-slate-400 truncate">${res.professional_title}</div>
+                  </div>
+                  <span class="text-[9px] font-mono font-bold bg-blue-900/40 text-blue-400 px-1.5 py-0.5 rounded border border-blue-800">${res.portfolio_score}%</span>
+                `;
+                navSuggs.appendChild(a);
+              });
+              navSuggs.classList.remove('hidden');
+            })
+            .catch(err => console.error(err));
+        }, 200);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (e.target !== navSearch && e.target !== navSuggs) {
+          navSuggs.innerHTML = '';
+          navSuggs.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>

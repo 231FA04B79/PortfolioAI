@@ -1,0 +1,324 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto animate-fade-in">
+  <div class="glass-card bg-white/70 border border-slate-200/80 shadow-sm rounded-card p-6 md:p-8">
+    
+    <div class="flex items-center gap-2 text-primary font-bold text-lg mb-6 pb-2 border-b border-slate-200/60">
+      <i class="bi bi-person-gear"></i>
+      <span>Edit Profile Details</span>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" novalidate id="profileForm" class="space-y-6">
+      {% csrf_token %}
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for field in form %}
+          <div class="{% if field.name == 'bio' or field.name == 'cover_image' %}md:col-span-2{% endif %} flex flex-col gap-1.5 relative">
+            
+            {% if field.name == 'location' %}
+              <!-- Autocomplete & Detection Location Field -->
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ field.label }}</label>
+              <div class="flex items-stretch rounded-lg shadow-sm">
+                <span class="inline-flex items-center px-3 bg-slate-50 border border-r-0 border-slate-300 rounded-l-lg text-slate-500"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" name="location" id="id_location" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 border-l-0 rounded-none py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Search City, State, Country..." value="{{ field.value|default:'' }}" autocomplete="off">
+                <button type="button" class="inline-flex items-center justify-center px-3 border border-l-0 border-primary bg-white text-primary hover:bg-primary hover:text-white rounded-r-lg text-sm font-semibold transition-colors" id="btn-detect-location" title="Detect Current Location">
+                  <i class="bi bi-geo-fill"></i>
+                </button>
+              </div>
+              <div id="location-suggestions" class="hidden absolute top-16 left-0 right-0 max-h-48 overflow-y-auto bg-white border border-slate-200 shadow-xl rounded-lg py-1 z-50 text-left"></div>
+              {% if field.errors %}
+                <div class="text-red-500 text-[10px] font-semibold mt-1">{{ field.errors.0 }}</div>
+              {% endif %}
+              
+            {% elif field.name == 'profile_image' %}
+              <!-- Cropped Profile Photo Preview and Input -->
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ field.label }}</label>
+              <div class="flex items-center gap-4">
+                <div class="flex-shrink-0">
+                  {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" id="profile-image-preview" class="w-20 h-20 rounded-full border border-slate-200 shadow-sm object-cover">
+                  {% else %}
+                    <div id="profile-image-preview-placeholder" class="w-20 h-20 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-2xl font-bold uppercase border border-slate-200">
+                      {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <img id="profile-image-preview" class="w-20 h-20 rounded-full border border-slate-200 shadow-sm object-cover hidden">
+                  {% endif %}
+                </div>
+                <div class="flex-grow space-y-1">
+                  {{ field }}
+                  <div class="text-[10px] text-slate-400">Recommended: Square format (500x500 px). Aspect ratio 1:1.</div>
+                </div>
+              </div>
+              {% if field.errors %}
+                <div class="text-red-500 text-[10px] font-semibold mt-1">{{ field.errors.0 }}</div>
+              {% endif %}
+
+            {% elif field.name == 'cover_image' %}
+              <!-- Cropped Banner Preview and Input -->
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ field.label }}</label>
+              <div class="space-y-3">
+                <div class="w-full overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                  {% if profile.cover_image %}
+                    <img src="{{ profile.cover_image.url }}" id="cover-image-preview" class="h-28 w-full object-cover">
+                  {% else %}
+                    <div id="cover-image-preview-placeholder" class="h-28 w-full bg-slate-50 text-slate-400 flex items-center justify-center text-xs font-semibold">
+                      No cover banner uploaded.
+                    </div>
+                    <img id="cover-image-preview" class="h-28 w-full object-cover hidden">
+                  {% endif %}
+                </div>
+                {{ field }}
+                <div class="text-[10px] text-slate-400">Recommended: Landscape format (1600x400 px). Aspect ratio 4:1.</div>
+              </div>
+              {% if field.errors %}
+                <div class="text-red-500 text-[10px] font-semibold mt-1">{{ field.errors.0 }}</div>
+              {% endif %}
+
+            {% else %}
+              <!-- Standard Fields -->
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="text-[10px] text-slate-400">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-red-500 text-[10px] font-semibold mt-1">{{ field.errors.0 }}</div>
+              {% endif %}
+            {% endif %}
+            
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Actions buttons -->
+      <div class="pt-6 border-t border-slate-200 flex items-center gap-3">
+        <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-xs font-bold rounded-xl transition-colors shadow-sm">
+          Save Changes
+        </button>
+        <a href="{% url 'profile' %}" class="inline-flex items-center justify-center px-4 py-2.5 border border-slate-200 text-slate-500 hover:bg-slate-50 text-xs font-bold rounded-xl transition-colors">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Image Cropping Editor Modal (Tailwind CSS Redesign) -->
+<div id="cropModal" class="hidden fixed inset-0 z-[2050] overflow-y-auto bg-slate-900/80 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+      <h5 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+        <i class="bi bi-crop text-primary"></i> Crop Uploaded Image
+      </h5>
+      <button type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none" onclick="document.getElementById('cropModal').classList.add('hidden')">
+        <i class="bi bi-x-lg text-base"></i>
+      </button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="p-0 bg-slate-950 flex items-center justify-center" style="height: 380px;">
+      <div class="w-full h-full flex items-center justify-center">
+        <img id="cropImage" src="" style="max-width: 100%; max-height: 100%; display: block;">
+      </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-2">
+        <button type="button" class="p-2 border border-slate-200 hover:bg-white rounded-lg text-slate-600 transition-colors" id="btn-zoom-in" title="Zoom In"><i class="bi bi-zoom-in text-sm"></i></button>
+        <button type="button" class="p-2 border border-slate-200 hover:bg-white rounded-lg text-slate-600 transition-colors" id="btn-zoom-out" title="Zoom Out"><i class="bi bi-zoom-out text-sm"></i></button>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" class="px-4 py-2 border border-slate-200 hover:bg-white rounded-lg text-xs font-semibold text-slate-600 transition-colors" onclick="document.getElementById('cropModal').classList.add('hidden')">Cancel</button>
+        <button type="button" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-bold transition-colors" id="btn-crop-confirm">Apply Crop</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // ----------------------------------------------------
+    // A. Location Search Auto-complete & Browser Geolocation
+    // ----------------------------------------------------
+    const locInput = document.getElementById('id_location');
+    const suggestionsDiv = document.getElementById('location-suggestions');
+    const detectBtn = document.getElementById('btn-detect-location');
+
+    if (locInput && suggestionsDiv) {
+      let timer;
+      locInput.addEventListener('input', function() {
+        clearTimeout(timer);
+        const query = locInput.value.trim();
+        if (query.length < 3) {
+          suggestionsDiv.innerHTML = '';
+          suggestionsDiv.classList.add('hidden');
+          return;
+        }
+        timer = setTimeout(() => {
+          fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`)
+            .then(res => res.json())
+            .then(data => {
+              suggestionsDiv.innerHTML = '';
+              if(data.length === 0) {
+                suggestionsDiv.classList.add('hidden');
+                return;
+              }
+              data.forEach(item => {
+                const addr = item.address;
+                const city = addr.city || addr.town || addr.village || addr.suburb || '';
+                const state = addr.state || '';
+                const country = addr.country || '';
+                const display = [city, state, country].filter(Boolean).join(', ') || item.display_name;
+                
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'w-full text-left px-4 py-2 hover:bg-slate-100 text-xs text-slate-700 transition-colors border-b border-slate-100 last:border-b-0';
+                btn.textContent = display;
+                btn.addEventListener('click', () => {
+                  locInput.value = display;
+                  suggestionsDiv.innerHTML = '';
+                  suggestionsDiv.classList.add('hidden');
+                });
+                suggestionsDiv.appendChild(btn);
+              });
+              suggestionsDiv.classList.remove('hidden');
+            })
+            .catch(err => console.error(err));
+        }, 300);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (e.target !== locInput && e.target !== suggestionsDiv) {
+          suggestionsDiv.innerHTML = '';
+          suggestionsDiv.classList.add('hidden');
+        }
+      });
+    }
+
+    if (detectBtn && locInput) {
+      detectBtn.addEventListener('click', function() {
+        detectBtn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>';
+        detectBtn.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+              .then(res => res.json())
+              .then(data => {
+                const addr = data.address;
+                const city = addr.city || addr.town || addr.village || addr.suburb || '';
+                const state = addr.state || '';
+                const country = addr.country || '';
+                const display = [city, state, country].filter(Boolean).join(', ') || data.display_name;
+                locInput.value = display;
+              })
+              .catch(err => {
+                alert("Error geocoding reverse mapping coordinates.");
+                console.error(err);
+              })
+              .finally(() => {
+                detectBtn.innerHTML = '<i class="bi bi-geo-fill"></i>';
+                detectBtn.disabled = false;
+              });
+          },
+          (error) => {
+            alert("Location access denied or unavailable.");
+            detectBtn.innerHTML = '<i class="bi bi-geo-fill"></i>';
+            detectBtn.disabled = false;
+          }
+        );
+      });
+    }
+
+    // ----------------------------------------------------
+    // B. Cropper.js Image Editor
+    // ----------------------------------------------------
+    let cropper;
+    let activeInput;
+    let activePreview;
+    let activePlaceholder;
+    let activeRatio;
+    let originalName = 'cropped.jpg';
+
+    const croppableInputs = [
+      { inputId: 'id_profile_image', previewId: 'profile-image-preview', placeholderId: 'profile-image-preview-placeholder', ratio: 1 },
+      { inputId: 'id_cover_image', previewId: 'cover-image-preview', placeholderId: 'cover-image-preview-placeholder', ratio: 4 }
+    ];
+
+    croppableInputs.forEach(item => {
+      const input = document.getElementById(item.inputId);
+      if (input) {
+        input.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file && file.type.startsWith('image/')) {
+            activeInput = input;
+            activePreview = document.getElementById(item.previewId);
+            activePlaceholder = document.getElementById(item.placeholderId);
+            activeRatio = item.ratio;
+            originalName = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              const cropImgElement = document.getElementById('cropImage');
+              cropImgElement.src = evt.target.result;
+              
+              const cropModal = document.getElementById('cropModal');
+              cropModal.classList.remove('hidden');
+              
+              if (cropper) cropper.destroy();
+              cropper = new Cropper(cropImgElement, {
+                aspectRatio: activeRatio,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false
+              });
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+
+    document.getElementById('btn-crop-confirm').addEventListener('click', function() {
+      if (cropper) {
+        const widthVal = activeRatio === 1 ? 500 : 1600;
+        const heightVal = activeRatio === 1 ? 500 : 400;
+        
+        const canvas = cropper.getCroppedCanvas({
+          width: widthVal,
+          height: heightVal
+        });
+        
+        canvas.toBlob(function(blob) {
+          const croppedFile = new File([blob], originalName, { type: 'image/jpeg' });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(croppedFile);
+          activeInput.files = dataTransfer.files;
+          
+          if (activePreview) {
+            activePreview.src = canvas.toDataURL('image/jpeg');
+            activePreview.style.display = 'block';
+            if (activePlaceholder) activePlaceholder.style.display = 'none';
+          }
+          
+          document.getElementById('cropModal').classList.add('hidden');
+          cropper.destroy();
+          cropper = null;
+        }, 'image/jpeg');
+      }
+    });
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => { if (cropper) cropper.zoom(0.1); });
+    document.getElementById('btn-zoom-out').addEventListener('click', () => { if (cropper) cropper.zoom(-0.1); });
+  });
+</script>
+{% endblock %}

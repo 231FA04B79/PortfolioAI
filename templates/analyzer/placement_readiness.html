@@ -1,0 +1,83 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Placement Readiness Score - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-shield-check text-emerald-500"></i>
+      <span>Placement Readiness Index</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Evaluate your job readiness and see real-time suggestions based on complete portfolio audit benchmarks.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Big Score Display -->
+    <div class="lg:col-span-5">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 text-center flex flex-col justify-center items-center h-full min-h-[350px]">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Overall Placement Index</h2>
+        
+        <div class="relative w-40 h-40 mb-5">
+          <div class="absolute inset-0 flex flex-col justify-center items-center">
+            <span class="text-4xl font-extrabold text-emerald-600 font-monospace">{{ score }}%</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-0.5">Ready</span>
+          </div>
+          <!-- SVG Progress Ring -->
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+            <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="text-emerald-500" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ score }}, 100" stroke-linecap="round" fill="none"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
+
+        <p class="text-xs text-slate-500 leading-relaxed px-4">
+          We check profile completeness, linked accounts, technical skills, projects, and achievements to generate this metric.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Column: Recommendations -->
+    <div class="lg:col-span-7">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 flex flex-col justify-between h-full">
+        <div>
+          <h2 class="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
+            <i class="bi bi-bullseye text-blue-600"></i>
+            <span>Actions for Higher Placement Ranking</span>
+          </h2>
+          
+          {% if score < 85 %}
+            <p class="text-xs text-slate-400 mb-4">Complete the following recommended goals to achieve a job-ready status (85%+):</p>
+            <div class="space-y-3">
+              {% for rec in recommendations %}
+                <div class="flex items-start gap-2.5 p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-all">
+                  <span class="text-blue-500 mt-0.5"><i class="bi-arrow-right-circle-fill"></i></span>
+                  <span class="text-xs text-slate-700 font-medium leading-relaxed">{{ rec }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-8 space-y-3">
+              <i class="bi bi-shield-check text-5xl text-emerald-500 block"></i>
+              <h3 class="text-lg font-bold text-emerald-600">You are Job-Ready!</h3>
+              <p class="text-xs text-slate-555 leading-relaxed mx-auto max-w-sm">
+                Your scores meet standard recruiter benchmarks. Keep adding achievements and tracking metrics to stay competitive.
+              </p>
+            </div>
+          {% endif %}
+        </div>
+        
+        <div class="flex flex-wrap gap-3 border-t border-slate-100 pt-5 mt-6">
+          <a href="{% url 'profile' %}" class="btn btn-primary px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-sm transition-all">
+            Manage Profile
+          </a>
+          <a href="{% url 'skill_list' %}" class="btn btn-outline-primary px-4 py-2 border border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold rounded-lg text-xs transition-all">
+            Manage Skills
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

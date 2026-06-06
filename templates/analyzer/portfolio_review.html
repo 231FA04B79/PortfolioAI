@@ -1,0 +1,151 @@
+{% extends "base_dashboard.html" %}
+{% block title %}AI Portfolio Audit - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-shield-check text-blue-600"></i>
+      <span>AI Portfolio Audit</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Get a comprehensive analysis of your profile completeness, skill inventory, credentials, and repository footprints.</p>
+  </div>
+
+  <!-- Performance Overview Gauge Row -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Completeness Card -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 text-center flex flex-col justify-center items-center">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Portfolio Score</span>
+      <div class="relative w-28 h-28 flex items-center justify-center">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-xl font-bold text-blue-600 font-monospace">{{ portfolio_score }}%</span>
+        </div>
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-blue-600" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ portfolio_score }}, 100" stroke-linecap="round" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-3">Dynamic completion weight of profile data.</p>
+    </div>
+
+    <!-- GitHub Activity Card -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 text-center flex flex-col justify-center items-center">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">GitHub Score</span>
+      <div class="relative w-28 h-28 flex items-center justify-center">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-xl font-bold text-slate-800 font-monospace">{{ github_score }}%</span>
+        </div>
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-slate-800" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ github_score }}, 100" stroke-linecap="round" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-3">Aggregated open-source and commit footprint.</p>
+    </div>
+
+    <!-- Readiness Card -->
+    <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 text-center flex flex-col justify-center items-center">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Placement Readiness</span>
+      <div class="relative w-28 h-28 flex items-center justify-center">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-xl font-bold text-emerald-600 font-monospace">{{ placement_readiness }}%</span>
+        </div>
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-100" stroke="#f1f5f9" stroke-width="3" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-emerald-500" stroke="currentColor" stroke-width="3" stroke-dasharray="{{ placement_readiness }}, 100" stroke-linecap="round" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-3">Indexed search visibility weight for recruiter filters.</p>
+    </div>
+  </div>
+
+  <!-- Detailed Report Cards Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Strengths & Weaknesses (8 cols) -->
+    <div class="lg:col-span-8 space-y-6">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+        <h2 class="text-base font-bold text-emerald-700 mb-4 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+          <i class="bi bi-hand-thumbs-up-fill"></i>
+          <span>Key Strengths</span>
+        </h2>
+        <div class="space-y-4">
+          {% for str in strengths %}
+            <div class="flex items-start gap-3">
+              <span class="text-emerald-500 mt-0.5"><i class="bi bi-check-circle-fill text-base"></i></span>
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">{{ str|slice:":22" }}</span>
+                <p class="text-xs text-slate-500 leading-relaxed mt-0.5">{{ str }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+        <h2 class="text-base font-bold text-amber-700 mb-4 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>Areas of Improvement / Weaknesses</span>
+        </h2>
+        <div class="space-y-4">
+          {% for weak in weaknesses %}
+            <div class="flex items-start gap-3">
+              <span class="text-amber-500 mt-0.5"><i class="bi bi-exclamation-octagon-fill text-base"></i></span>
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">{{ weak|slice:":22" }}</span>
+                <p class="text-xs text-slate-500 leading-relaxed mt-0.5">{{ weak }}</p>
+              </div>
+            </div>
+          {% empty %}
+            <div class="p-4 rounded-xl text-xs border bg-emerald-50 border-emerald-200 text-emerald-800 flex items-center gap-2">
+              <i class="bi bi-check-circle-fill text-emerald-600 fs-5"></i>
+              <span>Superb! No major gaps detected in your portfolio configurations.</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations Sidebar (4 cols) -->
+    <div class="lg:col-span-4">
+      <div class="glass-card bg-slate-50/80 backdrop-blur border border-slate-200 border-t-4 border-t-blue-600 rounded-xl p-5 flex flex-col justify-between h-full min-h-[350px]">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <i class="bi bi-arrow-right-circle-fill text-blue-600"></i>
+            <span>Action Checklist</span>
+          </h3>
+          <p class="text-xs text-slate-450 mb-5">Complete these recommended actions to raise your search metrics index:</p>
+          
+          <div class="space-y-4">
+            {% for rec in recommendations %}
+              <div class="flex items-start gap-3">
+                <span class="bg-blue-50 text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold mt-0.5 border border-blue-100 flex-shrink-0">
+                  {{ forloop.counter }}
+                </span>
+                <span class="text-xs text-slate-700 font-medium leading-relaxed">{{ rec }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <div class="flex flex-col gap-2 border-t border-slate-150 pt-5 mt-6">
+          <a href="{% url 'profile' %}" class="btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+            <i class="bi bi-pencil-square"></i>
+            <span>Update Profile Details</span>
+          </a>
+          <a href="{% url 'project_list' %}" class="btn btn-outline-primary py-2.5 border border-blue-500 text-blue-650 hover:bg-blue-50/50 font-semibold rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+            <i class="bi bi-folder-plus"></i>
+            <span>Add Project Showcase</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

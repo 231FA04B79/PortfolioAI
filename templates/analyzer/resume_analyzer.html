@@ -1,0 +1,101 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Resume Analyzer - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-file-text text-indigo-500"></i>
+      <span>AI Resume Analyzer</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Upload your PDF resume to scan for missing sections, ATS compatibility, and improvement suggestions.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Upload Form -->
+    <div class="lg:col-span-6 space-y-6">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+        <h2 class="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <i class="bi bi-file-earmark-arrow-up text-blue-600"></i>
+          <span>Upload PDF Resume</span>
+        </h2>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+          {% csrf_token %}
+          
+          <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 hover:border-blue-500 transition-colors bg-slate-50/50 hover:bg-slate-50 relative flex flex-col items-center justify-center text-center cursor-pointer group">
+            <input type="file" name="resume" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="application/pdf" required onchange="updateFileName(this)">
+            <i class="bi bi-cloud-upload text-slate-400 group-hover:text-blue-500 text-3xl mb-2 transition-colors"></i>
+            <span class="text-sm font-semibold text-slate-700" id="file-label-text">Select PDF Resume file</span>
+            <span class="text-xs text-slate-400 mt-1">Accepts PDF files up to 5MB</span>
+          </div>
+
+          <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+            <i class="bi bi-cpu"></i>
+            <span>Analyze Resume</span>
+          </button>
+        </form>
+      </div>
+
+      {% if error %}
+        <div class="p-4 rounded-xl text-sm border bg-rose-50 border-rose-200 text-rose-800 flex items-center gap-2">
+          <i class="bi bi-exclamation-octagon-fill text-rose-500 fs-5"></i>
+          <span>{{ error }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Results -->
+    <div class="lg:col-span-6 space-y-6">
+      {% if resume_score %}
+        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 space-y-5">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h3 class="text-base font-bold text-slate-950">Analysis Summary</h3>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 font-monospace">
+              Score: {{ resume_score }}%
+            </span>
+          </div>
+
+          {% if missing_sections %}
+            <div class="space-y-2">
+              <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Missing Key Sections:</strong>
+              <div class="flex flex-wrap gap-1.5">
+                {% for section in missing_sections %}
+                  <span class="inline-flex items-center text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 rounded-md">
+                    <i class="bi bi-x-circle-fill text-rose-500 mr-1.5"></i>
+                    <span>{{ section|title }}</span>
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          {% if suggestions %}
+            <div class="space-y-3 pt-2">
+              <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Improvement Checklist:</strong>
+              <ul class="space-y-2.5">
+                {% for suggestion in suggestions %}
+                  <li class="flex items-start gap-2.5 text-xs text-slate-650 leading-relaxed">
+                    <span class="text-blue-500 mt-0.5"><i class="bi bi-arrow-right-circle-fill"></i></span>
+                    <span>{{ suggestion }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateFileName(input) {
+    const label = document.getElementById('file-label-text');
+    if (input.files && input.files[0]) {
+      label.textContent = input.files[0].name;
+    }
+  }
+</script>
+{% endblock %}

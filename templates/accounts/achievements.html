@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Achievements & Badges Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6 animate-fade-in">
+  
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+        <i class="bi bi-award text-primary"></i> Achievements Dashboard
+      </h1>
+      <p class="text-xs text-slate-400">Track your unlocked badges, career progression milestones, and verification credentials.</p>
+    </div>
+    <div class="flex-shrink-0">
+      <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-655 text-slate-600 hover:bg-slate-50 text-xs font-semibold shadow-sm transition-colors">
+        <i class="bi bi-speedometer2"></i> Student Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Gamification Summary Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm text-center">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Total Badges Earned</span>
+      <span class="text-4xl font-extrabold text-secondary font-mono">{{ earned_user_badges.count }}</span>
+      <p class="text-[10px] text-slate-400 mt-2">Badges unlocked across all categories.</p>
+    </div>
+    
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm text-center">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Portfolio Completion</span>
+      <span class="text-4xl font-extrabold text-primary font-mono">{{ portfolio_score }}%</span>
+      <p class="text-[10px] text-slate-400 mt-2">Dynamic completion weight of active profile.</p>
+    </div>
+
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm text-center">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Placement Readiness</span>
+      <span class="text-4xl font-extrabold text-success font-mono">{{ readiness }}%</span>
+      <p class="text-[10px] text-slate-400 mt-2">Placement score required for candidate ranking.</p>
+    </div>
+  </div>
+
+  <!-- Progression Timelines -->
+  {% if progression_list %}
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm">
+      <h2 class="text-sm font-bold text-slate-800 pb-2 border-b border-slate-200/60 mb-5 flex items-center gap-2">
+        <i class="bi bi-signpost-split text-primary"></i> Next Badge Milestones
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for prog in progression_list %}
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[9px] font-bold uppercase">{{ prog.category }}</span>
+                <span class="text-[10px] text-slate-400 font-semibold">Next Level</span>
+              </div>
+              <h3 class="text-xs font-bold text-slate-800 mb-1">{{ prog.next }}</h3>
+              <p class="text-[10px] text-slate-500 leading-normal">{{ prog.requirement }}</p>
+            </div>
+            
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[10px] text-slate-400 font-bold">
+                <span>Target Progress</span>
+                <span>{{ prog.progress }}%</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
+                <div class="bg-primary h-full transition-all duration-500" style="width: {{ prog.progress }}%"></div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Earned vs Locked Badges Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Unlocked Badges (2 cols) -->
+    <div class="lg:col-span-2">
+      <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm space-y-5">
+        <h2 class="text-sm font-bold text-success pb-2 border-b border-slate-200/60 flex items-center gap-2">
+          <i class="bi bi-patch-check-fill"></i> Earned Achievements & Badges
+        </h2>
+        
+        {% if earned_user_badges %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for ub in earned_user_badges %}
+              <div class="bg-white border border-slate-200/80 p-4 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-start gap-4">
+                <!-- Badge Level Icon styling -->
+                <div class="w-11 h-11 rounded-full border flex items-center justify-center flex-shrink-0 shadow-sm
+                  {% if ub.badge.level == 'Gold' %}bg-warning/10 border-warning/30 text-warning
+                  {% elif ub.badge.level == 'Silver' %}bg-slate-200/50 border-slate-300 text-slate-500
+                  {% else %}bg-sky-50 border-sky-200 text-sky-600{% endif %}">
+                  <i class="bi {{ ub.badge.icon_class }} text-lg"></i>
+                </div>
+                
+                <div class="min-w-0 flex-grow">
+                  <div class="flex items-center justify-between gap-2 mb-0.5">
+                    <h3 class="text-xs font-bold text-slate-800 truncate" title="{{ ub.badge.name }}">{{ ub.badge.name }}</h3>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-mono font-bold
+                      {% if ub.badge.level == 'Gold' %}bg-warning/15 text-warning-dark
+                      {% elif ub.badge.level == 'Silver' %}bg-slate-200/80 text-slate-600
+                      {% else %}bg-sky-500/10 text-sky-600{% endif %}">{{ ub.badge.level }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 truncate" title="{{ ub.badge.description }}">{{ ub.badge.description }}</p>
+                  <span class="block text-[8px] font-mono text-slate-400 mt-2">Earned: {{ ub.date_earned|date:"M d, Y" }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-10 space-y-2">
+            <i class="bi bi-award text-4xl text-slate-300"></i>
+            <p class="text-xs text-slate-500 font-bold">No achievements earned yet.</p>
+            <p class="text-[10px] text-slate-400 max-w-sm mx-auto">Complete Python skills, add 3 projects, or sync GitHub to unlock your first badge!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Locked Badges Sidebar (1 col) -->
+    <div class="lg:col-span-1">
+      <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm space-y-5">
+        <h2 class="text-sm font-bold text-slate-800 pb-2 border-b border-slate-200/60 flex items-center gap-2">
+          <i class="bi bi-lock text-slate-400"></i> Locked Milestones
+        </h2>
+        
+        <div class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+          {% for badge in locked_badges %}
+            <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-white opacity-60">
+              <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi {{ badge.icon_class }} text-base"></i>
+              </div>
+              <div class="min-w-0 flex-grow">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="text-xs font-bold text-slate-700 truncate">{{ badge.name }}</h4>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] bg-slate-100 border border-slate-200 text-slate-500 font-mono">{{ badge.level }}</span>
+                </div>
+                <p class="text-[10px] text-slate-400 truncate">{{ badge.description }}</p>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-success text-xs font-semibold flex items-center gap-1.5"><i class="bi bi-check-circle-fill"></i> Incredible! You have unlocked all badges.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

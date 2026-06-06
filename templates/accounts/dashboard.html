@@ -1,0 +1,378 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Student Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6 animate-fade-in">
+  
+  <!-- User Profile Header Card -->
+  <div class="glass-card overflow-hidden bg-white/70 border border-slate-200/80 shadow-sm rounded-card">
+    {% if profile.cover_image %}
+      <div class="h-32 w-full bg-cover bg-center" style="background-image: url('{{ profile.cover_image.url }}');"></div>
+    {% else %}
+      <div class="h-32 w-full bg-gradient-to-r from-primary to-secondary"></div>
+    {% endif %}
+    
+    <div class="px-6 pb-6 pt-0 -mt-12 relative z-10 text-center sm:text-left">
+      <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 mb-2">
+        <div class="flex-shrink-0">
+          {% if profile.profile_image %}
+            <img src="{{ profile.profile_image.url }}" class="w-24 h-24 rounded-full border-4 border-white shadow object-cover" alt="Profile photo">
+          {% else %}
+            <div class="w-24 h-24 rounded-full border-4 border-white shadow bg-secondary text-white flex items-center justify-content-center text-3xl font-extrabold">
+              {{ user.username|slice:":1"|upper }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="flex-grow space-y-1">
+          <h2 class="text-xl font-bold text-slate-800">{{ profile.full_name|default:user.username }}</h2>
+          <p class="flex flex-wrap justify-center sm:justify-start items-center gap-2 text-xs font-semibold text-primary">
+            <span class="inline-flex items-center gap-1"><i class="bi bi-briefcase"></i>{{ profile.professional_title|default:"Aspiring Software Developer" }}</span>
+            {% if profile.location %}
+              <span class="text-slate-300">&bull;</span>
+              <span class="inline-flex items-center gap-1 text-slate-500"><i class="bi bi-geo-alt"></i>{{ profile.location }}</span>
+            {% endif %}
+          </p>
+        </div>
+        <div class="flex-shrink-0 pt-2 sm:pt-0">
+          <a href="{% url 'portfolio_view' username=user.username %}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-semibold text-xs transition-colors shadow-sm focus:outline-none">
+            <i class="bi bi-globe"></i> Public Portfolio
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Autocomplete Search Bar -->
+  <div class="glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm">
+    <div class="max-w-2xl mx-auto relative">
+      <form method="get" action="{% url 'portfolio_search' %}" class="flex items-center">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+            <i class="bi bi-search text-sm"></i>
+          </span>
+          <input 
+            type="text" 
+            name="q" 
+            id="dashboard-search-input" 
+            class="block w-full !pl-11 !pr-24 !py-3 bg-white border border-slate-200 text-slate-800 placeholder-slate-400 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm !mb-0" 
+            placeholder="Search portfolios by candidate name, username, or professional title..." 
+            autocomplete="off"
+          >
+          <div class="absolute inset-y-0 right-0 flex items-center pr-1.5">
+            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
+      <!-- Suggestions Container -->
+      <div id="dashboard-search-suggestions" class="hidden absolute top-14 left-0 right-0 max-h-60 overflow-y-auto bg-white border border-slate-200 shadow-2xl rounded-2xl py-1 z-50 text-left"></div>
+    </div>
+  </div>
+
+  <!-- 5 KPI Stats Cards Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    <!-- Portfolio Score -->
+    <div class="col-span-2 sm:col-span-3 lg:col-span-1 glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm flex flex-col justify-between min-h-[120px]">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Portfolio Score</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">{{ portfolio_score }}%</span>
+      </div>
+      <div>
+        <div class="w-full bg-slate-200 rounded-full h-1.5 mb-2 overflow-hidden">
+          <div class="bg-primary h-full progress-bar transition-all duration-500 ease-out" role="progressbar" aria-valuenow="{{ portfolio_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p class="text-[9px] text-slate-400">Dynamic weighted completion score.</p>
+      </div>
+    </div>
+
+    <!-- Skills Count -->
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm text-center flex flex-col justify-center items-center">
+      <div class="w-9 h-9 rounded-full bg-success/10 text-success flex items-center justify-center mb-2">
+        <i class="bi bi-tools text-sm"></i>
+      </div>
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Skills</span>
+      <span class="text-xl font-bold text-slate-800">{{ skills_count }}</span>
+    </div>
+
+    <!-- Projects Count -->
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm text-center flex flex-col justify-center items-center">
+      <div class="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center mb-2">
+        <i class="bi bi-code-slash text-sm"></i>
+      </div>
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Projects</span>
+      <span class="text-xl font-bold text-slate-800">{{ projects_count }}</span>
+    </div>
+
+    <!-- Certifications Count -->
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm text-center flex flex-col justify-center items-center">
+      <div class="w-9 h-9 rounded-full bg-warning/10 text-warning flex items-center justify-center mb-2">
+        <i class="bi bi-patch-check text-sm"></i>
+      </div>
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Certs</span>
+      <span class="text-xl font-bold text-slate-800">{{ certifications_count }}</span>
+    </div>
+
+    <!-- Placement Readiness -->
+    <div class="col-span-2 sm:col-span-3 lg:col-span-1 glass-card bg-white/70 border border-slate-200/80 p-4 rounded-card shadow-sm flex flex-col justify-between min-h-[120px]">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Placement Readiness</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-success/10 text-success border border-success/20">{{ placement_readiness }}%</span>
+      </div>
+      <div>
+        <div class="w-full bg-slate-200 rounded-full h-1.5 mb-2 overflow-hidden">
+          <div class="bg-success h-full progress-bar transition-all duration-500 ease-out" role="progressbar" aria-valuenow="{{ placement_readiness }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p class="text-[9px] text-slate-400">Calculated index for candidate search rank.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Modules & Achievements Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- AI Modules -->
+    <div class="lg:col-span-2 glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm">
+      <h3 class="flex items-center gap-2 text-base font-bold text-primary mb-5">
+        <i class="bi bi-robot"></i>
+        <span>AI Career Platform Modules</span>
+      </h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <a href="{% url 'resume_import' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-primary/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-file-earmark-arrow-up text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-primary transition-colors">AI Resume Import</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Segment PDF sections and auto-populate your profiles.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'ats_resume_builder' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-secondary/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-file-earmark-pdf text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-secondary transition-colors">AI ATS Resume Builder</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Select styling templates and download optimized PDFs.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'analytics_dashboard' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-success/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-success/10 text-success flex items-center justify-center flex-shrink-0 group-hover:bg-success group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-graph-up-arrow text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-success transition-colors">Analytics Dashboard</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">View comprehensive charts for skills and matching.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'coding_analyzer' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-warning/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-warning/10 text-warning flex items-center justify-center flex-shrink-0 group-hover:bg-warning group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-code text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-warning transition-colors">Coding Profiles</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Link LeetCode and HackerRank algorithmic scores.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'job_description_analyzer' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-danger/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-danger/10 text-danger flex items-center justify-center flex-shrink-0 group-hover:bg-danger group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-file-earmark-check text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-danger transition-colors">AI Job Description Analyzer</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Match ATS scoring against requirements & get custom roadmap.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'portfolio_review' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-accent/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 group-hover:bg-accent group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-shield-check text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-accent transition-colors">AI Portfolio Audit</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Evaluate strengths, weaknesses, and clear improvement tips.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'ai_profile_generator' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-secondary/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-chat-quote text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-secondary transition-colors">AI Profile Copywriter</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Generate professional summary & LinkedIn headlines/About.</p>
+          </div>
+        </a>
+
+        <a href="{% url 'portfolio_quality_score' %}" class="group bg-white border border-slate-150 border-slate-200 hover:border-success/20 hover:shadow p-4 rounded-xl transition-all flex items-start gap-4">
+          <div class="w-10 h-10 rounded bg-success/10 text-success flex items-center justify-center flex-shrink-0 group-hover:bg-success group-hover:text-white transition-colors duration-300">
+            <i class="bi bi-trophy text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-1 group-hover:text-success transition-colors">Portfolio Quality Score</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">View dynamic quality rating and completeness checklists.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Badges Sidebar Card -->
+    <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm">
+      <h3 class="flex items-center gap-2 text-base font-bold text-primary mb-5">
+        <i class="bi bi-award-fill text-warning"></i>
+        <span>Platform Badges</span>
+      </h3>
+      
+      {% if badges %}
+        <div class="space-y-4">
+          {% for badge in badges %}
+            <div class="flex items-start gap-3 pb-3 border-b border-slate-200 last:border-b-0 last:pb-0">
+              <div class="w-9 h-9 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+                <i class="bi {{ badge.icon_class }} text-base"></i>
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-xs font-bold text-slate-800 truncate">{{ badge.name }}</h4>
+                <p class="text-[10px] text-slate-400 leading-normal">{{ badge.description }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-8 space-y-2">
+          <i class="bi bi-award text-3xl text-slate-300"></i>
+          <p class="text-xs text-slate-500 font-medium">No badges earned yet.</p>
+          <span class="block text-[10px] text-slate-400 max-w-xs mx-auto">Complete Python skills, add 3 projects, or sync GitHub to unlock them.</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Achievements & Badges Section (Horizontal Scroll Redesign) -->
+  <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-5">
+      <h3 class="flex items-center gap-2 text-base font-bold text-primary">
+        <i class="bi bi-award-fill text-warning"></i>
+        <span>My Earned Achievements & Badges</span>
+      </h3>
+      <a href="{% url 'achievements_dashboard' %}" class="inline-flex items-center px-3.5 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-xs font-semibold">
+        View Dashboard
+      </a>
+    </div>
+    
+    {% if user.user_badges.exists %}
+      <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-style">
+        {% for ub in user.user_badges.all %}
+          <div class="w-48 flex-shrink-0 bg-white border border-slate-200 p-4 rounded-xl text-center space-y-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-full border flex items-center justify-center mx-auto shadow-sm
+              {% if ub.badge.level == 'Gold' %}bg-warning/10 border-warning/30 text-warning
+              {% elif ub.badge.level == 'Silver' %}bg-slate-200/50 border-slate-350 border-slate-300 text-slate-650
+              {% else %}bg-sky-50 border-sky-200 text-sky-600{% endif %}">
+              <i class="bi {{ ub.badge.icon_class }} text-xl"></i>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-slate-800 truncate" title="{{ ub.badge.name }}">{{ ub.badge.name }}</h4>
+              <p class="text-[10px] text-slate-400 line-clamp-2 h-7 leading-normal" title="{{ ub.badge.description }}">{{ ub.badge.description }}</p>
+            </div>
+            <div class="text-[9px] font-mono text-slate-450 text-slate-400">Earned: {{ ub.date_earned|date:"M d, Y" }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl space-y-2">
+        <i class="bi bi-award text-3xl text-slate-300"></i>
+        <p class="text-xs text-slate-500 font-semibold">No badges unlocked yet.</p>
+        <p class="text-[10px] text-slate-400">Start completing portfolio tasks to earn your first platform badge!</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Scrollbar Styling -->
+<style>
+  .scrollbar-style::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-style::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+  }
+  .scrollbar-style::-webkit-scrollbar-thumb {
+    background: rgba(37, 99, 235, 0.12);
+    border-radius: 10px;
+  }
+  .scrollbar-style::-webkit-scrollbar-thumb:hover {
+    background: rgba(37, 99, 235, 0.25);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Autocomplete Search suggestion box logic for dashboard
+    const dashSearch = document.getElementById('dashboard-search-input');
+    const dashSuggs = document.getElementById('dashboard-search-suggestions');
+    if (dashSearch && dashSuggs) {
+      let timer;
+      dashSearch.addEventListener('input', function() {
+        clearTimeout(timer);
+        const query = dashSearch.value.trim();
+        if (!query) {
+          dashSuggs.innerHTML = '';
+          dashSuggs.classList.add('hidden');
+          return;
+        }
+        timer = setTimeout(() => {
+          fetch(`/portfolio/search/?json=1&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+              dashSuggs.innerHTML = '';
+              if (data.results.length === 0) {
+                const item = document.createElement('div');
+                item.className = 'px-4 py-2 text-xs text-slate-500';
+                item.textContent = 'No matching portfolios found';
+                dashSuggs.appendChild(item);
+                dashSuggs.classList.remove('hidden');
+                return;
+              }
+              
+              data.results.forEach(res => {
+                const a = document.createElement('a');
+                a.href = res.url;
+                a.className = 'flex items-center gap-3 px-4 py-2 hover:bg-slate-100 transition-colors text-slate-700';
+                
+                const imgHtml = res.image_url 
+                  ? `<img src="${res.image_url}" class="w-6 h-6 rounded-full object-cover">`
+                  : `<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-650 flex items-center justify-content-center text-[10px] font-bold uppercase">${res.username.slice(0, 1)}</div>`;
+                  
+                a.innerHTML = `
+                  ${imgHtml}
+                  <div class="flex-grow min-w-0">
+                    <div class="font-semibold text-xs text-slate-800 truncate">${res.full_name}</div>
+                    <div class="text-[9px] text-slate-500 truncate">${res.professional_title}</div>
+                  </div>
+                  <span class="text-[9px] font-mono font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20">${res.portfolio_score}%</span>
+                `;
+                dashSuggs.appendChild(a);
+              });
+              dashSuggs.classList.remove('hidden');
+            })
+            .catch(err => console.error(err));
+        }, 200);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (e.target !== dashSearch && e.target !== dashSuggs) {
+          dashSuggs.innerHTML = '';
+          dashSuggs.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

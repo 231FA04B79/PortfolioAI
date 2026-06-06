@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Search & Rank Students - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Search & Rank Students</h1>
+    <p class="text-sm text-slate-500 mt-1">Find, filter, and automatically rank candidates based on career readiness, GitHub contributions, or portfolio scores.</p>
+  </div>
+
+  <!-- Search & Filter Card -->
+  <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div class="md:col-span-3 space-y-1.5">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Candidate Name</label>
+        <input type="text" name="q" value="{{ query }}" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="Name or username">
+      </div>
+      <div class="md:col-span-4 space-y-1.5">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Skills Filter <span class="text-slate-300">(comma-separated)</span></label>
+        <input type="text" name="skills" value="{{ skills }}" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="e.g. Python, React, Docker">
+      </div>
+      <div class="md:col-span-3 space-y-1.5">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Auto-Rank By</label>
+        <select name="sort_by" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0">
+          <option value="readiness" {% if sort_by == 'readiness' %}selected{% endif %}>Placement Readiness</option>
+          <option value="portfolio" {% if sort_by == 'portfolio' %}selected{% endif %}>Portfolio Score</option>
+          <option value="github" {% if sort_by == 'github' %}selected{% endif %}>GitHub Contribution Score</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <button type="submit" class="w-full btn btn-primary py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2 text-sm">
+          <i class="bi bi-filter"></i>
+          <span>Filter & Rank</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Search Results -->
+  <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+    {% if students %}
+      <div class="divide-y divide-slate-100">
+        {% for student in students %}
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 hover:bg-slate-50/50 transition-all">
+            <!-- Student Info -->
+            <div class="flex items-center gap-4">
+              <span class="text-xl font-extrabold text-slate-300 w-8 text-right flex-shrink-0">#{{ forloop.counter }}</span>
+              {% if student.profile.profile_image %}
+                <img src="{{ student.profile.profile_image.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-slate-100 shadow-sm" alt="Avatar">
+              {% else %}
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 text-white border-2 border-slate-100 flex items-center justify-center font-bold text-xl shadow-sm">
+                  {{ student.username|slice:":1"|upper }}
+                </div>
+              {% endif %}
+              <div>
+                <h3 class="text-sm font-bold text-slate-950">{{ student.profile.full_name|default:student.username }}</h3>
+                <p class="text-[11px] text-blue-600 font-medium flex items-center gap-1"><i class="bi bi-briefcase"></i> {{ student.profile.professional_title|default:"Developer" }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-envelope mr-1"></i>{{ student.email }}</p>
+              </div>
+            </div>
+
+            <!-- Metric Score Badges -->
+            <div class="flex flex-wrap gap-3 ml-12 md:ml-0">
+              <div class="text-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 min-w-[72px]">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Readiness</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 font-monospace">{{ student.readiness }}%</span>
+              </div>
+              <div class="text-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 min-w-[72px]">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Portfolio</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 font-monospace">{{ student.p_score }}%</span>
+              </div>
+              <div class="text-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 min-w-[72px]">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">GitHub</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 font-monospace">{{ student.g_score }}%</span>
+              </div>
+            </div>
+
+            <!-- Action -->
+            <div class="ml-12 md:ml-0">
+              <a href="{% url 'student_profile' student.username %}" class="inline-flex items-center gap-1.5 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all">
+                <i class="bi bi-eye"></i>
+                <span>View Profile</span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="p-12 text-center text-slate-400 space-y-3">
+        <i class="bi bi-people text-5xl text-slate-200 block"></i>
+        <p class="text-sm">No active students were found matching your criteria.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

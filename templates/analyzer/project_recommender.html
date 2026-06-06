@@ -1,0 +1,83 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Smart Project Recommender - PortfolioAI{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+      <i class="bi bi-diagram-3 text-purple-500"></i>
+      <span>Smart Project Recommender</span>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Personalized project recommendations derived from your current skills list to expand your portfolio and practical experience.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Recommendations List (8 cols) -->
+    <div class="lg:col-span-8">
+      {% if recommendations %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {% for project in recommendations %}
+            <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
+              <div>
+                <header class="flex justify-between items-start gap-2 mb-3">
+                  <h3 class="text-sm font-bold text-slate-950 leading-tight">{{ project.title }}</h3>
+                  {% if project.difficulty == 'Easy' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0">Easy</span>
+                  {% elif project.difficulty == 'Medium' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 flex-shrink-0">Medium</span>
+                  {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 flex-shrink-0">Hard</span>
+                  {% endif %}
+                </header>
+
+                <div class="mb-3 space-y-1.5">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tech Stack:</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    {% for tech in project.tech_list %}
+                      <span class="tech-tag">{{ tech }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-100 pt-3 mt-3">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Learning Outcomes:</span>
+                <p class="text-xs text-slate-500 leading-relaxed">{{ project.outcome }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="p-6 text-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 space-y-3">
+          <i class="bi bi-diagram-3 text-4xl text-slate-300 block"></i>
+          <p class="text-sm font-semibold">No project recommendations available yet.</p>
+          <p class="text-xs text-slate-400">Add more skills to your profile to receive personalized recommendations.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Skills Pool -->
+    <div class="lg:col-span-4">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 sticky top-6">
+        <h2 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+          <i class="bi bi-tools text-indigo-500"></i>
+          <span>Your Skills Pool</span>
+        </h2>
+        {% if user_skills %}
+          <div class="flex flex-wrap gap-2">
+            {% for s in user_skills %}
+              <span class="inline-flex items-center text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-lg">{{ s|title }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-slate-400 leading-relaxed mb-4">Add skills to your portfolio profile to receive customized matching project ideas!</p>
+          <a href="{% url 'skill_list' %}" class="w-full btn btn-primary py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs block text-center transition-all shadow-sm">
+            Add Skills Now
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

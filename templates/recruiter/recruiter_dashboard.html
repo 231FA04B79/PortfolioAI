@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Command Center - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  <!-- Header -->
+  <div>
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Recruiter Command Center</h1>
+    <p class="text-sm text-slate-500 mt-1">Search, track, and rank the top developer talent in your cohort.</p>
+  </div>
+
+  <!-- Command Center Stats & Actions Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Large Search Box Card -->
+    <div class="lg:col-span-8">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 flex flex-col justify-between h-full">
+        <div class="mb-4">
+          <h2 class="text-base font-bold text-blue-600 flex items-center gap-2 mb-1.5">
+            <i class="bi bi-search"></i>
+            <span>Quick Talent Search</span>
+          </h2>
+          <p class="text-xs text-slate-500">Query by candidate names, titles, or filter by specific technology skills to dynamically rank candidates.</p>
+        </div>
+
+        <form method="get" action="{% url 'student_search' %}" class="flex flex-col sm:flex-row gap-3">
+          <input type="text" name="q" class="flex-1 block px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="Name or username...">
+          <input type="text" name="skills" class="flex-1 block px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all !mb-0" placeholder="Skills (e.g. Python, Docker)...">
+          <button type="submit" class="flex-shrink-0 btn btn-primary px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all flex items-center gap-2 text-sm">
+            <i class="bi bi-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Side Metrics Card -->
+    <div class="lg:col-span-4">
+      <div class="rounded-xl p-6 text-white shadow-lg flex flex-col justify-between h-full min-h-[160px]" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+        <div>
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-600 text-white mb-3">Talent Pool Status</span>
+          <h4 class="text-base font-bold mb-1">Active Candidates</h4>
+          <p class="text-white/50 text-xs leading-relaxed">Browse through the profiles of fully-prepared students ready for placement.</p>
+        </div>
+        <div class="flex items-baseline gap-2 mt-4">
+          <span class="text-4xl font-extrabold text-blue-400 font-monospace">{{ students.count }}</span>
+          <span class="text-white/50 text-xs">Candidates Registered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Students Grid -->
+  <div>
+    <div class="flex justify-between items-center mb-5">
+      <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <i class="bi bi-people-fill text-blue-600"></i>
+        <span>Featured Student Pool</span>
+      </h4>
+      <a href="{% url 'student_search' %}" class="inline-flex items-center gap-1.5 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all">
+        <i class="bi bi-filter-left"></i>
+        <span>Advanced Filter & Rank</span>
+      </a>
+    </div>
+
+    {% if students %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for student in students %}
+          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div>
+              <!-- Student Header -->
+              <div class="flex items-center gap-3 mb-4">
+                {% if student.profile.profile_image %}
+                  <img src="{{ student.profile.profile_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-slate-100 shadow-sm" alt="Avatar">
+                {% else %}
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 text-white border-2 border-slate-100 flex items-center justify-center font-bold text-lg shadow-sm">
+                    {{ student.username|slice:":1"|upper }}
+                  </div>
+                {% endif %}
+                <div>
+                  <h5 class="text-sm font-bold text-slate-950">{{ student.profile.full_name|default:student.username }}</h5>
+                  <p class="text-[11px] text-blue-600 font-medium flex items-center gap-1">
+                    <i class="bi bi-briefcase"></i>
+                    <span>{{ student.profile.professional_title|default:"Developer" }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Skills Preview -->
+              {% if student.skills.all %}
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  {% for skill in student.skills.all|slice:":3" %}
+                    <span class="inline-flex items-center text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded">{{ skill.name }}</span>
+                  {% endfor %}
+                  {% if student.skills.all.count > 3 %}
+                    <span class="inline-flex items-center text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 px-2 py-0.5 rounded">+{{ student.skills.all.count|add:"-3" }} more</span>
+                  {% endif %}
+                </div>
+              {% else %}
+                <p class="text-[11px] text-slate-400 italic mb-4">No skills registered yet.</p>
+              {% endif %}
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
+              <span class="text-[11px] text-slate-400">
+                Ready:
+                <strong class="text-emerald-600 font-bold">
+                  {% if student.profile.coding_score %}{{ student.profile.coding_score }}%{% else %}--{% endif %}
+                </strong>
+              </span>
+              <a href="{% url 'student_profile' student.username %}" class="inline-flex items-center gap-1 text-xs font-semibold border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all">
+                <i class="bi bi-eye"></i>
+                <span>Inspect Profile</span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-10 text-center text-slate-400 space-y-3">
+        <i class="bi bi-people text-4xl text-slate-200 block"></i>
+        <p class="text-sm">No registered students found in the database.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
