@@ -43,11 +43,49 @@ def send_otp_email(email, otp_code, purpose='registration'):
         purpose=purpose
     )
     
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
     resend_api_key = os.environ.get('RESEND_API_KEY')
     brevo_api_key = os.environ.get('BREVO_API_KEY')
     
-    # 1. Send via Brevo if API key is provided
-    if brevo_api_key:
+    # 1. Send via SendGrid if API key is provided
+    if sendgrid_api_key:
+        url = "https://api.sendgrid.com/v3/mail/send"
+        headers = {
+            "Authorization": f"Bearer {sendgrid_api_key}",
+            "Content-Type": "application/json"
+        }
+        sender_email = from_email if '@' in from_email and not from_email.endswith('localhost') else 'hemanthkurapati097@gmail.com'
+        payload = {
+            "personalizations": [
+                {
+                    "to": [{"email": email}]
+                }
+            ],
+            "from": {
+                "email": sender_email,
+                "name": "PortfolioAI"
+            },
+            "subject": subject,
+            "content": [
+                {
+                    "type": "text/plain",
+                    "value": message
+                }
+            ]
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if response.status_code in [200, 201, 202]:
+                return True
+            else:
+                print(f" [SENDGRID API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
+                return False
+        except Exception as e:
+            print(f" [SENDGRID API EXCEPTION] Failed to send email to {email}: {e}")
+            return False
+
+    # 2. Send via Brevo if API key is provided
+    elif brevo_api_key:
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
             "api-key": brevo_api_key,
