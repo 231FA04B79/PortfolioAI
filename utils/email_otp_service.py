@@ -5,6 +5,10 @@ from django.utils import timezone
 from datetime import timedelta
 from accounts.models import EmailOTP
 
+import os
+import requests
+import json
+
 def generate_otp():
     """Generates a cryptographically-random-like 6-digit OTP code."""
     return f"{random.randint(100000, 999999)}"
@@ -39,18 +43,76 @@ def send_otp_email(email, otp_code, purpose='registration'):
         purpose=purpose
     )
     
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=from_email,
-            recipient_list=[email],
-            fail_silently=False
-        )
-        return True
-    except Exception as e:
-        print(f" [EMAIL SERVICE EXCEPTION] Failed to send email to {email}: {e}")
-        return False
+    resend_api_key = os.environ.get('RESEND_API_KEY')
+    brevo_api_key = os.environ.get('BREVO_API_KEY')
+    
+    # 1. Send via Brevo if API key is provided
+    if brevo_api_key:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "api-key": brevo_api_key,
+            "Content-Type": "application/json"
+        }
+        sender_email = from_email if '@' in from_email and not from_email.endswith('localhost') else 'hemanthkurapati097@gmail.com'
+        payload = {
+            "sender": {"name": "PortfolioAI", "email": sender_email},
+            "to": [{"email": email}],
+            "subject": subject,
+            "textContent": message
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if response.status_code in [200, 201]:
+                return True
+            else:
+                print(f" [BREVO API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
+                return False
+        except Exception as e:
+            print(f" [BREVO API EXCEPTION] Failed to send email to {email}: {e}")
+            return False
+            
+    # 2. Send via Resend if API key is provided
+    elif resend_api_key:
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {resend_api_key}",
+            "Content-Type": "application/json"
+        }
+        from_email_resend = from_email if '@' in from_email and not from_email.endswith('localhost') else 'onboarding@resend.dev'
+        if 'onboarding@resend.dev' in from_email_resend:
+            from_email_resend = "PortfolioAI <onboarding@resend.dev>"
+            
+        payload = {
+            "from": from_email_resend,
+            "to": [email],
+            "subject": subject,
+            "text": message
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if response.status_code in [200, 201]:
+                return True
+            else:
+                print(f" [RESEND API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
+                return False
+        except Exception as e:
+            print(f" [RESEND API EXCEPTION] Failed to send email to {email}: {e}")
+            return False
+            
+    # 3. Fallback to standard Django send_mail (SMTP)
+    else:
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=from_email,
+                recipient_list=[email],
+                fail_silently=False
+            )
+            return True
+        except Exception as e:
+            print(f" [EMAIL SERVICE EXCEPTION] Failed to send email to {email}: {e}")
+            return False
 
 def delete_expired_otps():
     """Deletes all expired OTPs from the database."""
