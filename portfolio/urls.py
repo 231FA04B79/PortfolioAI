@@ -31,5 +31,5 @@ urlpatterns = [
     path('resume/download/', views.generate_resume, name='generate_resume'),
     path('resume/ats/', views.ats_resume_builder, name='ats_resume_builder'),
     path('search/', views.portfolio_search, name='portfolio_search'),
-    path('<slug:username>/', views.portfolio_view, name='portfolio_view'),
+    path('<str:username>/', views.portfolio_view, name='portfolio_view'),
 ]
