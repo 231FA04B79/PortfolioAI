@@ -78,9 +78,14 @@ def send_otp_email(email, otp_code, purpose='registration'):
             "Authorization": f"Bearer {resend_api_key}",
             "Content-Type": "application/json"
         }
-        from_email_resend = from_email if '@' in from_email and not from_email.endswith('localhost') else 'onboarding@resend.dev'
-        if 'onboarding@resend.dev' in from_email_resend:
-            from_email_resend = "PortfolioAI <onboarding@resend.dev>"
+        # Resend requires domain verification. Since we cannot verify gmail.com, we must use onboarding@resend.dev
+        # unless a custom verified domain is explicitly provided in environment variables.
+        from_email_resend = os.environ.get('RESEND_FROM_EMAIL')
+        if not from_email_resend:
+            if 'gmail.com' in from_email or 'localhost' in from_email or '@' not in from_email:
+                from_email_resend = "PortfolioAI <onboarding@resend.dev>"
+            else:
+                from_email_resend = from_email
             
         payload = {
             "from": from_email_resend,
