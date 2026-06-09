@@ -45,10 +45,12 @@ def register_view(request):
             # Send verification OTP
             from utils.email_otp_service import generate_otp, send_otp_email
             otp_code = generate_otp()
-            send_otp_email(form.cleaned_data['email'], otp_code, purpose='registration')
-            
-            messages.info(request, f"A verification OTP code has been sent to your email: {form.cleaned_data['email']}.")
-            return redirect('verify_registration_email')
+            if send_otp_email(form.cleaned_data['email'], otp_code, purpose='registration'):
+                messages.info(request, f"A verification OTP code has been sent to your email: {form.cleaned_data['email']}.")
+                return redirect('verify_registration_email')
+            else:
+                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
+                return render(request, 'accounts/register.html', {'form': form})
     else:
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
@@ -68,8 +70,10 @@ def verify_registration_email(request):
         
         if action == 'resend':
             otp_code = generate_otp()
-            send_otp_email(email, otp_code, purpose='registration')
-            messages.success(request, "A new verification OTP code has been sent.")
+            if send_otp_email(email, otp_code, purpose='registration'):
+                messages.success(request, "A new verification OTP code has been sent.")
+            else:
+                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
         else:
             code = request.POST.get('otp', '').strip()
             is_valid, msg = verify_otp(email, code, purpose='registration')
@@ -117,13 +121,14 @@ def forgot_password(request):
         # Send verification OTP
         from utils.email_otp_service import generate_otp, send_otp_email
         otp_code = generate_otp()
-        send_otp_email(email, otp_code, purpose='password_reset')
-        
-        request.session['email_otp_reset_email'] = email
-        request.session.modified = True
-        
-        messages.info(request, f"A verification OTP code has been sent to your registered email: {email}.")
-        return redirect('verify_forgot_email')
+        if send_otp_email(email, otp_code, purpose='password_reset'):
+            request.session['email_otp_reset_email'] = email
+            request.session.modified = True
+            messages.info(request, f"A verification OTP code has been sent to your registered email: {email}.")
+            return redirect('verify_forgot_email')
+        else:
+            messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
+            return render(request, 'accounts/forgot_password.html')
         
     return render(request, 'accounts/forgot_password.html')
 
@@ -140,8 +145,10 @@ def verify_forgot_email(request):
         
         if action == 'resend':
             otp_code = generate_otp()
-            send_otp_email(email, otp_code, purpose='password_reset')
-            messages.success(request, "A new verification OTP code has been sent.")
+            if send_otp_email(email, otp_code, purpose='password_reset'):
+                messages.success(request, "A new verification OTP code has been sent.")
+            else:
+                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
         else:
             code = request.POST.get('otp', '').strip()
             is_valid, msg = verify_otp(email, code, purpose='password_reset')
@@ -576,10 +583,12 @@ def account_settings(request):
                 
         elif action == 'send_verify_otp':
             otp_code = generate_otp()
-            send_otp_email(request.user.email, otp_code, purpose='email_verification')
-            show_otp_input = True
-            otp_purpose = 'email_verification'
-            messages.info(request, f"A verification code has been sent to {request.user.email}.")
+            if send_otp_email(request.user.email, otp_code, purpose='email_verification'):
+                show_otp_input = True
+                otp_purpose = 'email_verification'
+                messages.info(request, f"A verification code has been sent to {request.user.email}.")
+            else:
+                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
             
         elif action == 'verify_email_otp':
             code = request.POST.get('otp', '').strip()
@@ -639,10 +648,12 @@ def change_password_ajax(request):
         
         # Send OTP
         otp_code = generate_otp()
-        send_otp_email(user.email, otp_code, purpose='password_change')
-        request.session['password_change_step1_passed'] = True
-        request.session.modified = True
-        return JsonResponse({'status': 'success', 'message': 'Password verified. OTP code sent.'})
+        if send_otp_email(user.email, otp_code, purpose='password_change'):
+            request.session['password_change_step1_passed'] = True
+            request.session.modified = True
+            return JsonResponse({'status': 'success', 'message': 'Password verified. OTP code sent.'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Failed to send verification email. Please check your SMTP settings or try again later.'})
         
     elif step == 2:
         if not request.session.get('password_change_step1_passed'):
