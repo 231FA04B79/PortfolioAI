@@ -46,7 +46,7 @@ def register_view(request):
             from utils.email_otp_service import generate_otp, send_otp_email
             otp_code = generate_otp()
             if send_otp_email(form.cleaned_data['email'], otp_code, purpose='registration'):
-                messages.info(request, f"A verification OTP code has been sent to your email: {form.cleaned_data['email']}.")
+                messages.info(request, f"A verification OTP code has been sent to your email: {form.cleaned_data['email']}. (Please check your spam/junk folder if you do not see it in your inbox).")
                 return redirect('verify_registration_email')
             else:
                 messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
@@ -71,7 +71,7 @@ def verify_registration_email(request):
         if action == 'resend':
             otp_code = generate_otp()
             if send_otp_email(email, otp_code, purpose='registration'):
-                messages.success(request, "A new verification OTP code has been sent.")
+                messages.success(request, "A new verification OTP code has been sent. (Please check your spam/junk folder if you do not see it in your inbox).")
             else:
                 messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
         else:
@@ -124,7 +124,7 @@ def forgot_password(request):
         if send_otp_email(email, otp_code, purpose='password_reset'):
             request.session['email_otp_reset_email'] = email
             request.session.modified = True
-            messages.info(request, f"A verification OTP code has been sent to your registered email: {email}.")
+            messages.info(request, f"A verification OTP code has been sent to your registered email: {email}. (Please check your spam/junk folder if you do not see it in your inbox).")
             return redirect('verify_forgot_email')
         else:
             messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
@@ -146,7 +146,7 @@ def verify_forgot_email(request):
         if action == 'resend':
             otp_code = generate_otp()
             if send_otp_email(email, otp_code, purpose='password_reset'):
-                messages.success(request, "A new verification OTP code has been sent.")
+                messages.success(request, "A new verification OTP code has been sent. (Please check your spam/junk folder if you do not see it in your inbox).")
             else:
                 messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
         else:
@@ -586,7 +586,7 @@ def account_settings(request):
             if send_otp_email(request.user.email, otp_code, purpose='email_verification'):
                 show_otp_input = True
                 otp_purpose = 'email_verification'
-                messages.info(request, f"A verification code has been sent to {request.user.email}.")
+                messages.info(request, f"A verification code has been sent to {request.user.email}. (Please check your spam/junk folder if you do not see it in your inbox).")
             else:
                 messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
             
