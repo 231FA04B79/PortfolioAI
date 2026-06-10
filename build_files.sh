@@ -6,7 +6,7 @@ set -e
 echo "=== Vercel Custom Django + Tailwind CSS Build ==="
 
 echo "Installing Python dependencies from requirements.txt..."
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt --break-system-packages
 
 echo "Installing Node.js dependencies..."
 npm install
