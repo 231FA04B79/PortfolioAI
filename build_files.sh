@@ -22,7 +22,11 @@ echo "Compiling Tailwind CSS..."
 npm run build
 
 echo "Collecting Django static files..."
-PYTHONUNBUFFERED=1 python3 manage.py collectstatic --noinput --clear 2>&1
+if ! python3 manage.py collectstatic --noinput --clear > build_log.txt 2>&1; then
+    echo "ERROR: Django collectstatic failed! Printing error log:"
+    cat build_log.txt
+    exit 1
+fi
 
 echo "Re-organizing static files for Vercel CDN..."
 # Ensure destination folder exists
