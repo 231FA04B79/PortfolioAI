@@ -22,7 +22,7 @@ echo "Compiling Tailwind CSS..."
 npm run build
 
 echo "Collecting Django static files..."
-python3 manage.py collectstatic --noinput --clear
+python3 manage.py collectstatic --noinput --clear 2>&1
 
 echo "Re-organizing static files for Vercel CDN..."
 # Ensure destination folder exists
