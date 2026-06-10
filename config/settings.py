@@ -91,13 +91,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+import sys
 from urllib.parse import urlparse
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Use a dummy SQLite database during Vercel's build phase (collectstatic) to avoid psycopg2/DB connection issues
+IS_BUILDING = 'collectstatic' in sys.argv or os.environ.get('VERCEL_BUILD') == '1'
+
 database_url = os.environ.get('DATABASE_URL')
-if database_url:
+if database_url and not IS_BUILDING:
     url = urlparse(database_url)
     DATABASES = {
         'default': {
