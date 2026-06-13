@@ -133,9 +133,12 @@
                 </a>
                 {% if request.user.is_superuser %}
                   <button type="button"
-                    onclick="openDeleteModal('{{ student.username }}', '{{ student.profile.full_name|default:student.username }}')"
+                    onclick="openDeleteModal(this)"
+                    data-username="{{ student.username }}"
+                    data-displayname="{{ student.profile.full_name|default:student.username }}"
+                    data-delete-url="{% url 'delete_user' student.username %}"
                     class="inline-flex items-center gap-1 text-xs font-semibold border border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 px-3 py-1.5 rounded-lg transition-all"
-                    id="delete-btn-{{ student.username }}"
+                    id="delete-btn-{{ forloop.counter }}"
                     title="Delete this user account">
                     <i class="bi bi-trash3"></i>
                   </button>
@@ -209,14 +212,17 @@
 <script>
   let deleteTargetUsername = '';
 
-  function openDeleteModal(username, displayName) {
+  function openDeleteModal(btn) {
+    const username = btn.getAttribute('data-username');
+    const displayName = btn.getAttribute('data-displayname');
+    const deleteUrl = btn.getAttribute('data-delete-url');
     deleteTargetUsername = username;
     document.getElementById('deleteUserDisplayName').textContent = displayName;
     document.getElementById('deleteConfirmTarget').textContent = username;
     document.getElementById('deleteConfirmInput').value = '';
     document.getElementById('deleteConfirmBtn').disabled = true;
     document.getElementById('deleteConfirmBtn').className = 'w-full px-4 py-2.5 text-sm font-bold text-white bg-red-400 rounded-lg transition-all cursor-not-allowed flex items-center justify-center gap-2';
-    document.getElementById('deleteForm').action = '/recruiter/student/' + username + '/delete/';
+    document.getElementById('deleteForm').action = deleteUrl;
     const modal = document.getElementById('deleteModal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
