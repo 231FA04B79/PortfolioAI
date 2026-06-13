@@ -1,7 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.db.models import Q
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
 
 
@@ -185,3 +188,61 @@ def compare_candidates(request):
         'candidate_b': candidate_b,
     }
     return render(request, 'recruiter/candidate_comparison.html', context)
+
+
+# ====================================================
+# FEATURE 8: ADMIN DELETE USER PROFILE
+# ====================================================
+
+@login_required
+@user_passes_test(is_recruiter, login_url='dashboard')
+@require_POST
+def delete_user(request, username):
+    """
+    Permanently deletes a user account and all associated data from the database.
+    Only accessible by admin/staff users via POST request.
+    Cascades to delete: Profile, Skills, Projects, Certifications,
+    Education, Achievements, Badges, View Logs, etc.
+    """
+    # Extra safety: only superusers can delete
+    if not request.user.is_superuser:
+        messages.error(request, 'Only administrators can delete user accounts.')
+        return redirect('recruiter_dashboard')
+
+    student = get_object_or_404(User, username=username)
+
+    # Prevent admin from deleting themselves
+    if student == request.user:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('recruiter_dashboard')
+
+    # Prevent deleting other staff/admin accounts
+    if student.is_staff or student.is_superuser:
+        messages.error(request, 'Cannot delete staff or admin accounts from here.')
+        return redirect('recruiter_dashboard')
+
+    # Clean up uploaded media files before deleting the user
+    try:
+        profile = student.profile
+        if profile.profile_image:
+            profile.profile_image.delete(save=False)
+        if profile.cover_image:
+            profile.cover_image.delete(save=False)
+    except Exception:
+        pass  # Profile may not exist
+
+    # Delete project images
+    for project in student.projects.all():
+        if project.project_image:
+            project.project_image.delete(save=False)
+
+    # Delete certificate files
+    for cert in student.certifications.all():
+        if cert.certificate_file:
+            cert.certificate_file.delete(save=False)
+
+    deleted_username = student.username
+    student.delete()  # Cascades to all related models
+
+    messages.success(request, f'User "{deleted_username}" and all associated data have been permanently deleted.')
+    return redirect('recruiter_dashboard')
