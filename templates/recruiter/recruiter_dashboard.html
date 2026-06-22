@@ -111,8 +111,7 @@
             </div>
             {% endif %}
             <div class="flex-1 min-w-0">
-              <h5 class="text-sm font-bold text-slate-950 truncate">{{
-                student.profile.full_name|default:student.username }}</h5>
+              <h5 class="text-sm font-bold text-slate-950 truncate">{{ student.profile.full_name|default:student.username }}</h5>
               <p class="text-[11px] text-blue-600 font-medium flex items-center gap-1">
                 <i class="bi bi-briefcase"></i>
                 <span>{{ student.profile.professional_title|default:"Developer" }}</span>
@@ -125,13 +124,11 @@
           <div class="flex flex-wrap gap-1.5 mb-4">
             {% for skill in student.skills.all|slice:":3" %}
             <span
-              class="inline-flex items-center text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded">{{
-              skill.name }}</span>
+              class="inline-flex items-center text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded">{{ skill.name }}</span>
             {% endfor %}
             {% if student.skills.all.count > 3 %}
             <span
-              class="inline-flex items-center text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 px-2 py-0.5 rounded">+{{
-              student.skills.all.count|add:"-3" }} more</span>
+              class="inline-flex items-center text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 px-2 py-0.5 rounded">+{{ student.skills.all.count|add:"-3" }} more</span>
             {% endif %}
           </div>
           {% else %}
