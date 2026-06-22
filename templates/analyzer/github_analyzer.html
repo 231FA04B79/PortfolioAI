@@ -15,7 +15,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- Left Column: Search & Profile Details -->
     <div class="lg:col-span-4 space-y-6">
-      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 card-hover-lift">
         <h2 class="text-base font-bold text-slate-950 mb-3">Analyze Account</h2>
         <form method="post" class="space-y-3">
           {% csrf_token %}
@@ -37,44 +37,71 @@
       {% endif %}
 
       {% if profile_data %}
-        <!-- Profile Card -->
-        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 text-center space-y-4">
-          {% if simulated %}
-            <div class="p-2 rounded-lg text-xs border bg-amber-50 border-amber-200 text-amber-800 flex items-center justify-center gap-1.5 font-semibold">
-              <i class="bi bi-exclamation-triangle-fill text-amber-500"></i>
-              <span>Rate-limited. Displaying simulated analytics.</span>
+        <div class="skeleton-container relative">
+          <!-- Skeleton Item (Loading State) -->
+          <div class="skeleton-item bg-white border border-slate-200 shadow-sm rounded-xl p-6 text-center space-y-4">
+            <div class="w-24 h-24 rounded-full bg-slate-200 skeleton-shimmer mx-auto"></div>
+            <div class="h-4 w-28 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+            <div class="h-3 w-40 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+            <div class="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-4 my-2">
+              <div class="space-y-1">
+                <div class="h-4 w-8 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+                <div class="h-2 w-10 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+              </div>
+              <div class="space-y-1">
+                <div class="h-4 w-8 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+                <div class="h-2 w-10 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+              </div>
+              <div class="space-y-1">
+                <div class="h-4 w-8 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+                <div class="h-2 w-10 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
+              </div>
             </div>
-          {% endif %}
-          
-          <div class="relative w-24 h-24 mx-auto">
-            <img src="{{ profile_data.avatar_url }}" class="rounded-full shadow-md object-cover border border-slate-100 w-full h-full" alt="Avatar">
+            <div class="h-8 w-24 bg-slate-200 rounded skeleton-shimmer mx-auto"></div>
           </div>
           
-          <div>
-            <h3 class="text-lg font-bold text-slate-950">{{ profile_data.login }}</h3>
-            <p class="text-xs text-slate-400 mt-0.5">{{ profile_data.bio|default:"Developer" }}</p>
-          </div>
-          
-          <div class="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-4 my-2">
-            <div>
-              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_repos }}</span>
-              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Repos</span>
-            </div>
-            <div>
-              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_stars }}</span>
-              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Stars</span>
-            </div>
-            <div>
-              <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_forks }}</span>
-              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Forks</span>
-            </div>
-          </div>
-          
-          <div class="space-y-1">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Developer Grade Score</span>
-            <div class="inline-flex items-baseline gap-1">
-              <span class="text-3xl font-extrabold text-blue-600 font-monospace">{{ github_score }}</span>
-              <span class="text-xs text-slate-400">/100</span>
+          <!-- Real Content -->
+          <div class="skeleton-content">
+            <!-- Profile Card -->
+            <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 text-center space-y-4 card-hover-lift">
+              {% if simulated %}
+                <div class="p-2 rounded-lg text-xs border bg-amber-50 border-amber-200 text-amber-800 flex items-center justify-center gap-1.5 font-semibold">
+                  <i class="bi bi-exclamation-triangle-fill text-amber-500"></i>
+                  <span>Rate-limited. Displaying simulated analytics.</span>
+                </div>
+              {% endif %}
+              
+              <div class="relative w-24 h-24 mx-auto">
+                <img src="{{ profile_data.avatar_url }}" class="rounded-full shadow-md object-cover border border-slate-100 w-full h-full" alt="Avatar">
+              </div>
+              
+              <div>
+                <h3 class="text-lg font-bold text-slate-950">{{ profile_data.login }}</h3>
+                <p class="text-xs text-slate-400 mt-0.5">{{ profile_data.bio|default:"Developer" }}</p>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-4 my-2">
+                <div>
+                  <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_repos }}</span>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Repos</span>
+                </div>
+                <div>
+                  <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_stars }}</span>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Stars</span>
+                </div>
+                <div>
+                  <span class="block text-base font-bold text-slate-900 font-monospace">{{ total_forks }}</span>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Forks</span>
+                </div>
+              </div>
+              
+              <div class="space-y-1">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Developer Grade Score</span>
+                <div class="inline-flex items-baseline gap-1">
+                  <span class="text-3xl font-extrabold text-blue-600 font-monospace">{{ github_score }}</span>
+                  <span class="text-xs text-slate-400">/100</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -84,26 +111,43 @@
     <!-- Right Column: Charts -->
     {% if profile_data %}
       <div class="lg:col-span-8 space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Languages Doughnut Chart -->
-          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
-            <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <i class="bi bi-pie-chart text-blue-600"></i>
-              <span>Language Distribution</span>
-            </h3>
-            <div class="relative h-[220px] w-full">
-              <canvas id="langChart"></canvas>
+        <div class="skeleton-container relative">
+          <!-- Skeleton Item (Loading State) -->
+          <div class="skeleton-item grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm h-[280px] space-y-4">
+              <div class="h-4 w-32 bg-slate-200 rounded skeleton-shimmer"></div>
+              <div class="w-32 h-32 rounded-full border-4 border-slate-100 skeleton-shimmer mx-auto mt-4"></div>
+            </div>
+            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm h-[280px] space-y-4">
+              <div class="h-4 w-32 bg-slate-200 rounded skeleton-shimmer"></div>
+              <div class="w-full h-32 bg-slate-100 rounded skeleton-shimmer mt-4"></div>
             </div>
           </div>
+          
+          <!-- Real Content -->
+          <div class="skeleton-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Languages Doughnut Chart -->
+              <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 card-hover-lift">
+                <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                  <i class="bi bi-pie-chart text-blue-600"></i>
+                  <span>Language Distribution</span>
+                </h3>
+                <div class="relative h-[220px] w-full">
+                  <canvas id="langChart"></canvas>
+                </div>
+              </div>
 
-          <!-- Top Repos Bar Chart -->
-          <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5">
-            <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <i class="bi bi-bar-chart text-blue-600"></i>
-              <span>Top Repositories (Stars)</span>
-            </h3>
-            <div class="relative h-[220px] w-full">
-              <canvas id="repoChart"></canvas>
+              <!-- Top Repos Bar Chart -->
+              <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-5 card-hover-lift">
+                <h3 class="text-sm font-bold text-slate-950 mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                  <i class="bi bi-bar-chart text-blue-600"></i>
+                  <span>Top Repositories (Stars)</span>
+                </h3>
+                <div class="relative h-[220px] w-full">
+                  <canvas id="repoChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>

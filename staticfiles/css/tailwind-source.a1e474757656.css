@@ -1,0 +1,471 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-700 min-h-screen font-sans;
+    background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="url"],
+  input[type="password"],
+  input[type="number"],
+  input[type="file"],
+  textarea,
+  select {
+    @apply block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all mb-4;
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism custom classes */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    @apply shadow-card rounded-card transition-all duration-300 ease-out;
+  }
+
+  .glass-card:hover {
+    @apply shadow-premium translate-y-[-4px] border-primary/20;
+  }
+
+  /* Bootstrap grid compatibility layer */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-fluid {
+    @apply w-full px-4 mx-auto;
+  }
+
+  .row {
+    @apply flex flex-wrap -mx-4;
+  }
+
+  .col-12 {
+    @apply w-full px-4;
+  }
+
+  .col-sm-6 {
+    @apply w-full sm:w-1/2 px-4;
+  }
+
+  .col-md-3 {
+    @apply w-full md:w-1/4 px-4;
+  }
+
+  .col-md-4 {
+    @apply w-full md:w-1/3 px-4;
+  }
+
+  .col-md-6 {
+    @apply w-full md:w-1/2 px-4;
+  }
+
+  .col-md-8 {
+    @apply w-full md:w-2/3 px-4;
+  }
+
+  .col-md-9 {
+    @apply w-full md:w-3/4 px-4;
+  }
+
+  .col-lg-3 {
+    @apply w-full lg:w-1/4 px-4;
+  }
+
+  .col-lg-4 {
+    @apply w-full lg:w-1/3 px-4;
+  }
+
+  .col-lg-8 {
+    @apply w-full lg:w-2/3 px-4;
+  }
+
+  .col-lg-9 {
+    @apply w-full lg:w-3/4 px-4;
+  }
+
+  .g-4 {
+    @apply gap-y-4 md:gap-y-6;
+  }
+
+  /* Bootstrap card compatibility */
+  .card {
+    @apply glass-card;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-title {
+    @apply text-lg font-bold text-dark mb-3;
+  }
+
+  .card-text {
+    @apply text-sm text-slate-500 leading-relaxed;
+  }
+
+  /* Buttons compatibility */
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold rounded-lg px-4 py-2.5 transition-all duration-200 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white shadow focus:ring-primary;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary-dark text-white shadow focus:ring-secondary;
+  }
+
+  .btn-outline-primary {
+    @apply border border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary;
+  }
+
+  .btn-outline-light {
+    @apply border border-white text-white hover:bg-white hover:text-dark focus:ring-white;
+  }
+
+  .btn-outline-teal {
+    @apply border border-accent text-accent hover:bg-accent hover:text-white focus:ring-accent;
+  }
+
+  .btn-outline-info {
+    @apply border border-accent text-accent hover:bg-accent hover:text-white focus:ring-accent;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3.5 text-base;
+  }
+
+  /* Badges compatibility - background classes are auto-generated, so we just style the base badge shape */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-transparent;
+  }
+
+  /* Soft badge overrides for text colors (backgrounds are generated as bg-*-soft) */
+  .bg-primary-soft {
+    color: #2563EB;
+  }
+
+  .bg-success-soft {
+    color: #10B981;
+  }
+
+  .bg-info-soft {
+    color: #06B6D4;
+  }
+
+  .bg-warning-soft {
+    color: #F59E0B;
+  }
+
+  .bg-danger-soft {
+    color: #EF4444;
+  }
+
+  .bg-purple-soft {
+    color: #7C3AED;
+  }
+
+  /* Progress bars compatibility */
+  .progress {
+    @apply w-full bg-slate-200 rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-bar {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+
+  /* List groups compatibility */
+  .list-group {
+    @apply flex flex-col;
+  }
+
+  .list-group-item {
+    @apply relative block px-4 py-3 bg-white border border-slate-200;
+  }
+
+  .list-group-item-action {
+    @apply w-full text-left text-slate-700 hover:bg-slate-50 cursor-pointer;
+  }
+
+  .list-group-item-action.active {
+    @apply bg-primary text-white hover:bg-primary-dark;
+  }
+
+  /* Django Forms compatibility */
+  .form-control {
+    @apply block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
+  }
+
+  .input-group {
+    @apply relative flex items-stretch w-full;
+  }
+
+  .input-group-text {
+    @apply flex items-center px-3 py-2 text-sm text-slate-500 bg-slate-50 border border-slate-300 rounded-l-lg border-r-0;
+  }
+
+  /* Typography compatibility */
+  .display-3 {
+    @apply text-4xl md:text-5xl font-extrabold tracking-tight;
+  }
+
+  .display-6 {
+    @apply text-2xl md:text-3xl font-extrabold tracking-tight;
+  }
+
+  .lead {
+    @apply text-lg text-slate-600;
+  }
+
+  .text-muted {
+    @apply text-slate-500;
+  }
+
+  .text-dark {
+    @apply text-slate-900;
+  }
+
+  .fw-bold {
+    @apply font-bold;
+  }
+
+  .fw-semibold {
+    @apply font-semibold;
+  }
+
+  .fw-light {
+    @apply font-light;
+  }
+
+  /* Utility mappings for full Bootstrap compatibility */
+  .w-100 {
+    @apply w-full;
+  }
+
+  .h-100 {
+    @apply h-full;
+  }
+
+  .d-block {
+    @apply block;
+  }
+
+  .d-none {
+    @apply hidden;
+  }
+
+  .d-flex {
+    @apply flex;
+  }
+
+  .align-items-center {
+    @apply items-center;
+  }
+
+  .align-items-end {
+    @apply items-end;
+  }
+
+  .justify-content-center {
+    @apply justify-center;
+  }
+
+  .justify-content-between {
+    @apply justify-between;
+  }
+
+  .flex-column {
+    @apply flex-col;
+  }
+
+  .flex-grow-1 {
+    @apply flex-grow;
+  }
+
+  .text-end {
+    @apply text-right;
+  }
+
+  .text-start {
+    @apply text-left;
+  }
+
+  .ms-auto {
+    @apply ml-auto;
+  }
+
+  .me-auto {
+    @apply mr-auto;
+  }
+
+  .position-relative {
+    @apply relative;
+  }
+
+  .position-absolute {
+    @apply absolute;
+  }
+
+  /* Sidebar active highlighting */
+  .sidebar-link.active {
+    @apply bg-blue-50/80 text-blue-600 font-semibold;
+  }
+
+  .sidebar-link.active i {
+    @apply text-blue-600 scale-105;
+  }
+}
+
+/* Timeline details from portfolio.css */
+.portfolio-timeline {
+  position: relative;
+  padding-left: 24px;
+  border-left: 2px dashed rgba(37, 99, 235, 0.2);
+}
+
+.portfolio-timeline-item::after {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #2563EB;
+  border: 2px solid white;
+}
+
+.tech-tag {
+  @apply bg-slate-100 border border-slate-200 text-primary font-medium text-xs px-2.5 py-1 rounded transition-all duration-200;
+}
+
+.tech-tag:hover {
+  @apply bg-primary text-white border-primary;
+}
+
+/* Dashboard-specific cards */
+.dashboard-card {
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+  @apply transition-all duration-300;
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #2563EB, #7C3AED);
+}
+
+/* Skeletons */
+@keyframes skeletonPulse {
+  0% {
+    background-color: rgba(226, 232, 240, 0.6);
+  }
+
+  50% {
+    background-color: rgba(203, 213, 225, 0.6);
+  }
+
+  100% {
+    background-color: rgba(226, 232, 240, 0.6);
+  }
+}
+
+.skeleton {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  @apply rounded-lg;
+}
+
+.skeleton-text {
+  height: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.skeleton-title {
+  height: 20px;
+  margin-bottom: 16px;
+  width: 60%;
+}
+
+/* Floating labels overrides */
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label {
+  color: #2563EB;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Custom styles for landing page mesh gradient visual flair */
+.hero-gradient {
+  background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.18) 0%, transparent 45%),
+    linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Step Node badges for landing page timeline */
+.step-node {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #2563EB;
+  color: white;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin: 0 auto 1rem;
+  box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.1);
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}

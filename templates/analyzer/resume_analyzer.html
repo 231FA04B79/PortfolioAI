@@ -15,7 +15,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- Left Column: Upload Form -->
     <div class="lg:col-span-6 space-y-6">
-      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6">
+      <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 card-hover-lift">
         <h2 class="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
           <i class="bi bi-file-earmark-arrow-up text-blue-600"></i>
           <span>Upload PDF Resume</span>
@@ -39,7 +39,7 @@
       </div>
 
       {% if error %}
-        <div class="p-4 rounded-xl text-sm border bg-rose-50 border-rose-200 text-rose-800 flex items-center gap-2">
+        <div class="p-4 rounded-xl text-sm border bg-rose-50 border-rose-200 text-rose-800 flex items-center gap-2 animate-page-in">
           <i class="bi bi-exclamation-octagon-fill text-rose-500 fs-5"></i>
           <span>{{ error }}</span>
         </div>
@@ -49,41 +49,67 @@
     <!-- Right Column: Results -->
     <div class="lg:col-span-6 space-y-6">
       {% if resume_score %}
-        <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 space-y-5">
-          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-950">Analysis Summary</h3>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 font-monospace">
-              Score: {{ resume_score }}%
-            </span>
-          </div>
-
-          {% if missing_sections %}
-            <div class="space-y-2">
-              <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Missing Key Sections:</strong>
-              <div class="flex flex-wrap gap-1.5">
-                {% for section in missing_sections %}
-                  <span class="inline-flex items-center text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 rounded-md">
-                    <i class="bi bi-x-circle-fill text-rose-500 mr-1.5"></i>
-                    <span>{{ section|title }}</span>
-                  </span>
-                {% endfor %}
+        <div class="skeleton-container relative">
+          <!-- Skeleton Item (Loading State) -->
+          <div class="skeleton-item bg-white border border-slate-200 shadow-sm rounded-xl p-6 space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div class="h-4 w-32 bg-slate-200 rounded skeleton-shimmer"></div>
+              <div class="h-6 w-16 bg-slate-200 rounded-full skeleton-shimmer"></div>
+            </div>
+            <div class="space-y-3">
+              <div class="h-3 w-40 bg-slate-200 rounded skeleton-shimmer"></div>
+              <div class="flex gap-2">
+                <div class="h-6 w-20 bg-slate-200 rounded-md skeleton-shimmer"></div>
+                <div class="h-6 w-24 bg-slate-200 rounded-md skeleton-shimmer"></div>
               </div>
             </div>
-          {% endif %}
-
-          {% if suggestions %}
-            <div class="space-y-3 pt-2">
-              <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Improvement Checklist:</strong>
-              <ul class="space-y-2.5">
-                {% for suggestion in suggestions %}
-                  <li class="flex items-start gap-2.5 text-xs text-slate-650 leading-relaxed">
-                    <span class="text-blue-500 mt-0.5"><i class="bi bi-arrow-right-circle-fill"></i></span>
-                    <span>{{ suggestion }}</span>
-                  </li>
-                {% endfor %}
-              </ul>
+            <div class="space-y-2 pt-2">
+              <div class="h-3 w-44 bg-slate-200 rounded skeleton-shimmer"></div>
+              {% for i in "12" %}
+              <div class="h-2 w-full bg-slate-200 rounded skeleton-shimmer"></div>
+              {% endfor %}
             </div>
-          {% endif %}
+          </div>
+          
+          <!-- Real Content -->
+          <div class="skeleton-content">
+            <div class="glass-card bg-white/70 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-6 space-y-5 card-hover-lift">
+              <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-950">Analysis Summary</h3>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 font-monospace">
+                  Score: {{ resume_score }}%
+                </span>
+              </div>
+
+              {% if missing_sections %}
+                <div class="space-y-2">
+                  <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Missing Key Sections:</strong>
+                  <div class="flex flex-wrap gap-1.5">
+                    {% for section in missing_sections %}
+                      <span class="inline-flex items-center text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 rounded-md">
+                        <i class="bi bi-x-circle-fill text-rose-500 mr-1.5"></i>
+                        <span>{{ section|title }}</span>
+                      </span>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if suggestions %}
+                <div class="space-y-3 pt-2">
+                  <strong class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Improvement Checklist:</strong>
+                  <ul class="space-y-2.5">
+                    {% for suggestion in suggestions %}
+                      <li class="flex items-start gap-2.5 text-xs text-slate-650 leading-relaxed">
+                        <span class="text-blue-500 mt-0.5"><i class="bi bi-arrow-right-circle-fill"></i></span>
+                        <span>{{ suggestion }}</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            </div>
+          </div>
         </div>
       {% endif %}
     </div>

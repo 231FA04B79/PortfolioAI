@@ -1,0 +1,64 @@
+<!-- PortfolioAI Core Loaders Layout -->
+
+<!-- 1. Global Page Loader (AI Orb Concept) -->
+<div id="global-page-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white transition-opacity duration-500 font-sans">
+  <div class="relative flex flex-col items-center max-w-sm px-6 text-center space-y-8">
+    
+    <!-- AI Orb Ring Concept -->
+    <div class="relative w-32 h-32 flex items-center justify-center">
+      <!-- Rotating Outer Dashed Ring -->
+      <div class="absolute inset-0 rounded-full border border-dashed border-blue-500/25 animate-[spin_20s_linear_infinite]"></div>
+      <!-- Rotating Middle Gradient Ring -->
+      <div class="absolute inset-2 rounded-full border border-purple-500/25 border-t-purple-400/80 animate-[spin_8s_linear_infinite_reverse]"></div>
+      <!-- Rotating Inner Cyan Ring -->
+      <div class="absolute inset-4 rounded-full border border-dashed border-cyan-400/20 border-r-cyan-400/70 animate-[spin_4s_linear_infinite]"></div>
+      
+      <!-- Pulsing Glow Core Orb -->
+      <div class="ai-orb-pulse w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-650 to-cyan-500 flex items-center justify-center shadow-lg border border-white/10">
+        <i class="bi bi-robot text-lg text-white"></i>
+      </div>
+      
+      <!-- Backdrop Ambient Blurs -->
+      <div class="absolute w-44 h-44 rounded-full bg-blue-600/5 blur-xl pointer-events-none -z-10 animate-pulse"></div>
+      <div class="absolute w-36 h-36 rounded-full bg-purple-600/5 blur-lg pointer-events-none -z-10 animate-pulse [animation-delay:1s]"></div>
+    </div>
+    
+    <!-- Loading Header & Sub-text -->
+    <div class="space-y-1">
+      <h3 class="text-lg font-extrabold tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-450 bg-clip-text text-transparent uppercase font-sans">
+        PortfolioAI
+      </h3>
+      <p id="loader-status-text" class="text-[10px] text-slate-400 tracking-wider font-semibold uppercase">Loading secure shell...</p>
+    </div>
+    
+    <!-- Progress Indicator Bar -->
+    <div class="w-44 h-1.5 bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
+      <div id="loader-progress-bar" class="w-0 h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 rounded-full transition-all duration-150 ease-out"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Form Submission Blocker Overlay -->
+<div id="form-submit-loader" class="fixed inset-0 z-[9998] hidden items-center justify-center bg-slate-950/70 backdrop-blur-xs text-white opacity-0 transition-opacity duration-300">
+  <div class="bg-slate-900/95 border border-slate-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full text-center font-sans mx-4">
+    
+    <!-- Submit Orb Animation -->
+    <div class="relative w-16 h-16 flex items-center justify-center">
+      <!-- Spinner -->
+      <div class="absolute inset-0 rounded-full border-2 border-slate-800 border-t-blue-500 border-r-blue-400 animate-spin"></div>
+      <!-- Inner Core -->
+      <div class="w-8 h-8 rounded-full bg-indigo-650 flex items-center justify-center animate-pulse">
+        <i class="bi bi-cpu text-xs text-indigo-200"></i>
+      </div>
+    </div>
+    
+    <!-- Status Text Description -->
+    <div class="space-y-1">
+      <p id="form-loader-text" class="text-xs font-bold text-slate-100 uppercase tracking-wide">Processing Request...</p>
+      <p class="text-[9px] text-slate-400 leading-normal">Securing channels, please do not close this window.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Toast Notifications Wrapper Container -->
+<div id="toast-container" class="fixed bottom-4 right-4 z-[99999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 md:px-0"></div>
