@@ -15,11 +15,13 @@ from utils.scoring_utils import get_portfolio_score, get_github_score, get_place
 
 def home(request):
     from django.contrib.auth.models import User
+    from portfolio.models import Skill, PortfolioViewTracker
+    from analyzer.models import JobDescription, RoadmapStep
     
-    portfolios_count = Profile.objects.count() + 142
-    resumes_count = User.objects.count() * 2 + 87
-    skills_count = Skill.objects.count() + 412
-    recs_count = Profile.objects.count() * 3 + 124
+    portfolios_count = Profile.objects.count()
+    resumes_count = PortfolioViewTracker.objects.filter(event_type='resume_download').count()
+    skills_count = Skill.objects.count()
+    recs_count = JobDescription.objects.count() + RoadmapStep.objects.count()
     
     context = {
         'portfolios_count': portfolios_count,
