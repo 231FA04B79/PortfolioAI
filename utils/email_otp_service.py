@@ -81,7 +81,12 @@ def send_otp_email(email, otp_code, purpose='registration'):
                 print(f" [SENDGRID API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
                 return False
         except Exception as e:
-            print(f" [SENDGRID API EXCEPTION] Failed to send email to {email}: {e}")
+            import traceback
+            print("="*60)
+            print("EMAIL ERROR")
+            print(e)
+            traceback.print_exc()
+            print("="*60)
             return False
 
     # 2. Send via Brevo if API key is provided
@@ -106,7 +111,12 @@ def send_otp_email(email, otp_code, purpose='registration'):
                 print(f" [BREVO API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
                 return False
         except Exception as e:
-            print(f" [BREVO API EXCEPTION] Failed to send email to {email}: {e}")
+            import traceback
+            print("="*60)
+            print("EMAIL ERROR")
+            print(e)
+            traceback.print_exc()
+            print("="*60)
             return False
             
     # 2. Send via Resend if API key is provided
@@ -139,7 +149,12 @@ def send_otp_email(email, otp_code, purpose='registration'):
                 print(f" [RESEND API EXCEPTION] Failed to send email: {response.status_code} - {response.text}")
                 return False
         except Exception as e:
-            print(f" [RESEND API EXCEPTION] Failed to send email to {email}: {e}")
+            import traceback
+            print("="*60)
+            print("EMAIL ERROR")
+            print(e)
+            traceback.print_exc()
+            print("="*60)
             return False
             
     # 3. Fallback to standard Django send_mail (SMTP)
@@ -154,7 +169,12 @@ def send_otp_email(email, otp_code, purpose='registration'):
             )
             return True
         except Exception as e:
-            print(f" [EMAIL SERVICE EXCEPTION] Failed to send email to {email}: {e}")
+            import traceback
+            print("="*60)
+            print("EMAIL ERROR")
+            print(e)
+            traceback.print_exc()
+            print("="*60)
             return False
 
 def delete_expired_otps():

@@ -206,7 +206,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'utils.email_backend.SSLCertBypassEmailBackend'
 EMAIL_TIMEOUT = 10
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'webmaster@localhost'
