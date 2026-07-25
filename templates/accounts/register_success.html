@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Save Recovery Code - PortfolioAI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 col-lg-5">
+    <div class="card border-0 shadow-lg glass-card fade-in">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="rounded-circle bg-success-soft text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-1">Account Created!</h2>
+          <p class="text-muted small">Your account has been set up successfully. Please save your recovery code securely.</p>
+        </div>
+
+        <div class="alert alert-warning border-0 bg-warning-soft text-warning-dark mb-4 py-3 text-center small" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>IMPORTANT:</strong> This recovery code will only be shown once. It is required to reset your password if you ever forget it.
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-muted small text-uppercase tracking-wider d-block text-center">Your Recovery Code</label>
+          <div class="p-3 bg-light rounded-3 text-center font-monospace fs-4 fw-bold text-primary border border-2 border-primary-soft shadow-inner position-relative select-all" id="recoveryCode">
+            {{ recovery_code }}
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="row g-2 mb-4">
+          <div class="col-4">
+            <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2" id="copyBtn">
+              <i class="bi bi-clipboard me-1"></i>Copy
+            </button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2" id="downloadBtn">
+              <i class="bi bi-download me-1"></i>Download
+            </button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2" id="printBtn">
+              <i class="bi bi-printer me-1"></i>Print
+            </button>
+          </div>
+        </div>
+
+        <!-- Consent check to enable continue button -->
+        <div class="form-check mb-4 text-start">
+          <input class="form-check-input border-secondary" type="checkbox" id="consentCheckbox">
+          <label class="form-check-label text-muted small select-none" for="consentCheckbox">
+            I have saved my recovery code securely and understand that it cannot be shown again.
+          </label>
+        </div>
+
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100 py-2.5 shadow-sm disabled" id="continueBtn">
+          <i class="bi bi-arrow-right-circle me-2"></i>Continue to Login
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const recoveryCode = "{{ recovery_code }}";
+    const consentCheckbox = document.getElementById("consentCheckbox");
+    const continueBtn = document.getElementById("continueBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const printBtn = document.getElementById("printBtn");
+
+    // Enable/disable continue button based on checkbox status
+    consentCheckbox.addEventListener("change", function() {
+      if (this.checked) {
+        continueBtn.classList.remove("disabled");
+      } else {
+        continueBtn.classList.add("disabled");
+      }
+    });
+
+    // Copy to clipboard
+    copyBtn.addEventListener("click", function() {
+      navigator.clipboard.writeText(recoveryCode).then(() => {
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Copied!';
+        copyBtn.classList.replace("btn-outline-secondary", "btn-success");
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.classList.replace("btn-success", "btn-outline-secondary");
+        }, 2000);
+      }).catch(err => {
+        alert("Failed to copy code: " + err);
+      });
+    });
+
+    // Download as TXT
+    downloadBtn.addEventListener("click", function() {
+      const element = document.createElement("a");
+      const file = new Blob([
+        "=========================================\n",
+        "PortfolioAI - Password Recovery Code\n",
+        "=========================================\n\n",
+        "Save this code in a secure location. It will be required if you forget your password.\n\n",
+        "Your Recovery Code: " + recoveryCode + "\n\n",
+        "Generated: " + new Date().toISOString() + "\n"
+      ], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = "portfolioai_recovery_code.txt";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
+
+    // Print
+    printBtn.addEventListener("click", function() {
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>PortfolioAI Recovery Code</title>
+            <style>
+              body { font-family: sans-serif; text-align: center; padding: 50px; }
+              .box { border: 2px dashed #000; padding: 20px; display: inline-block; font-family: monospace; font-size: 24px; font-weight: bold; margin: 20px 0; }
+              .warning { color: red; font-weight: bold; margin-bottom: 20px; }
+            </style>
+          </head>
+          <body>
+            <h2>PortfolioAI Password Recovery Code</h2>
+            <p class="warning">IMPORTANT: Keep this code secure. Do not share it with anyone.</p>
+            <p>Your unique account recovery code:</p>
+            <div class="box">${recoveryCode}</div>
+            <p>Printed on: ${new Date().toLocaleString()}</p>
+            <script>window.print();window.close();<\/script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    });
+  });
+</script>
+{% endblock %}

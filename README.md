@@ -14,11 +14,10 @@ The platform combines portfolio management, resume building, GitHub profile anal
 
 * User Registration
 * Secure Login & Logout
-* Email Verification
-* Forgot Password via OTP
-* Change Password
+* Password Recovery via Cryptographically Secure Recovery Codes (`PAI-XXXX-XXXX-XXXX`)
+* Change Password Flow
 * Session Management
-* Account Security Settings
+* Account Security Settings (with Recovery Code regeneration)
 
 ### 👤 Profile Management
 
@@ -146,8 +145,7 @@ PortfolioAI/
 ### Authentication
 
 * Django Authentication System
-* Email OTP Verification
-* Password Recovery System
+* Secure Recovery Code Password Reset System (timing-safe, salt-hashed, offline-first)
 
 ### AI & Analytics
 
@@ -252,10 +250,6 @@ Create `.env`
 SECRET_KEY=your_secret_key
 
 DEBUG=True
-
-EMAIL_HOST_USER=your_email@gmail.com
-
-EMAIL_HOST_PASSWORD=your_app_password
 
 GITHUB_TOKEN=your_github_token
 ```

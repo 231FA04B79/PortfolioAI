@@ -34,151 +34,65 @@ def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            # Save pending registration details to session
-            request.session['pending_registration'] = {
-                'username': form.cleaned_data['username'],
-                'email': form.cleaned_data['email'],
-                'password': form.cleaned_data['password'],
-            }
+            from django.contrib.auth.models import User
+            # Create user account immediately
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password']
+            )
+            
+            # Generate recovery code
+            from utils.recovery_service import generate_recovery_code, hash_recovery_code
+            plain_code = generate_recovery_code()
+            
+            # Save profile & mark email as verified
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.email_verified = True
+            profile.full_name = form.cleaned_data['username']
+            profile.recovery_code_hash = hash_recovery_code(plain_code)
+            profile.save()
+            
+            # Store code in session for one-time display
+            request.session['plain_recovery_code'] = plain_code
             request.session.modified = True
             
-            # Send verification OTP
-            from utils.email_otp_service import generate_otp, send_otp_email
-            otp_code = generate_otp()
-            if send_otp_email(form.cleaned_data['email'], otp_code, purpose='registration'):
-                messages.info(request, f"A verification OTP code has been sent to your email: {form.cleaned_data['email']}. (Please check your spam/junk folder if you do not see it in your inbox).")
-                return redirect('verify_registration_email')
-            else:
-                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
-                return render(request, 'accounts/register.html', {'form': form})
+            messages.success(request, "Account created successfully! Please save your recovery code.")
+            return redirect('register_success')
     else:
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
 
 
-def verify_registration_email(request):
-    pending = request.session.get('pending_registration')
-    if not pending:
-        messages.error(request, "No pending registration found. Please register first.")
-        return redirect('register')
-        
-    email = pending['email']
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        from utils.email_otp_service import generate_otp, send_otp_email, verify_otp
-        
-        if action == 'resend':
-            otp_code = generate_otp()
-            if send_otp_email(email, otp_code, purpose='registration'):
-                messages.success(request, "A new verification OTP code has been sent. (Please check your spam/junk folder if you do not see it in your inbox).")
-            else:
-                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
-        else:
-            code = request.POST.get('otp', '').strip()
-            is_valid, msg = verify_otp(email, code, purpose='registration')
-            
-            if is_valid:
-                from django.contrib.auth.models import User
-                # Create user account
-                user = User.objects.create_user(
-                    username=pending['username'],
-                    email=pending['email'],
-                    password=pending['password']
-                )
-                # Create profile and mark email as verified
-                profile, _ = Profile.objects.get_or_create(user=user)
-                profile.email_verified = True
-                profile.full_name = pending['username']
-                profile.save()
-                
-                # Clear pending registration session keys
-                del request.session['pending_registration']
-                request.session.modified = True
-                
-                messages.success(request, "Account created successfully. Please login.")
-                return redirect('login')
-            else:
-                messages.error(request, msg)
-                
-    context = {'email': email, 'purpose': 'registration'}
-    return render(request, 'accounts/verify_email_otp.html', context)
+def register_success(request):
+    plain_code = request.session.pop('plain_recovery_code', None)
+    if not plain_code:
+        messages.error(request, "No pending recovery code to display.")
+        return redirect('login')
+    return render(request, 'accounts/register_success.html', {'recovery_code': plain_code})
 
 
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-        if not email:
-            messages.error(request, "Please enter your registered email address.")
-            return render(request, 'accounts/forgot_password.html')
-            
-        from django.contrib.auth.models import User
-        user = User.objects.filter(email=email).first()
-        if not user:
-            messages.error(request, "This email address is not registered.")
-            return render(request, 'accounts/forgot_password.html')
-            
-        # Send verification OTP
-        from utils.email_otp_service import generate_otp, send_otp_email
-        otp_code = generate_otp()
-        if send_otp_email(email, otp_code, purpose='password_reset'):
-            request.session['email_otp_reset_email'] = email
-            request.session.modified = True
-            messages.info(request, f"A verification OTP code has been sent to your registered email: {email}. (Please check your spam/junk folder if you do not see it in your inbox).")
-            return redirect('verify_forgot_email')
-        else:
-            messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
-            return render(request, 'accounts/forgot_password.html')
-        
-    return render(request, 'accounts/forgot_password.html')
-
-
-def verify_forgot_email(request):
-    email = request.session.get('email_otp_reset_email')
-    if not email:
-        messages.error(request, "No active password reset session found. Please enter your email again.")
-        return redirect('forgot_password')
-        
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        from utils.email_otp_service import generate_otp, send_otp_email, verify_otp
-        
-        if action == 'resend':
-            otp_code = generate_otp()
-            if send_otp_email(email, otp_code, purpose='password_reset'):
-                messages.success(request, "A new verification OTP code has been sent. (Please check your spam/junk folder if you do not see it in your inbox).")
-            else:
-                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
-        else:
-            code = request.POST.get('otp', '').strip()
-            is_valid, msg = verify_otp(email, code, purpose='password_reset')
-            
-            if is_valid:
-                request.session['email_password_reset_allowed'] = True
-                request.session.modified = True
-                return redirect('reset_password')
-            else:
-                messages.error(request, msg)
-                
-    context = {'email': email, 'purpose': 'reset'}
-    return render(request, 'accounts/verify_reset_otp.html', context)
-
-
-def reset_password(request):
-    if not request.session.get('email_password_reset_allowed'):
-        messages.error(request, "Unauthorized password reset attempt. Please verify your email first.")
-        return redirect('forgot_password')
-        
-    email = request.session.get('email_otp_reset_email')
-    if request.method == 'POST':
+        recovery_code = request.POST.get('recovery_code', '').strip()
         password = request.POST.get('password', '').strip()
         password_confirm = request.POST.get('password_confirm', '').strip()
         
-        errors = []
+        if not email or not recovery_code or not password or not password_confirm:
+            messages.error(request, "All fields are required.")
+            return render(request, 'accounts/forgot_password.html')
+            
         if password != password_confirm:
-            errors.append("Passwords do not match.")
+            messages.error(request, "Passwords do not match.")
+            return render(request, 'accounts/forgot_password.html')
+            
         if len(password) < 8:
-            errors.append("Password must be at least 8 characters long.")
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, 'accounts/forgot_password.html')
+            
+        # Security validation checks on password complexity
+        errors = []
         if not any(c.isupper() for c in password):
             errors.append("Password must contain at least one uppercase letter.")
         if not any(c.islower() for c in password):
@@ -187,47 +101,52 @@ def reset_password(request):
             errors.append("Password must contain at least one number.")
         if not any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in password):
             errors.append("Password must contain at least one special character.")
-            
         if errors:
             for err in errors:
                 messages.error(request, err)
-            return render(request, 'accounts/reset_password.html')
-            
-        # Django validation check
-        from django.contrib.auth.password_validation import validate_password
-        from django.core.exceptions import ValidationError
+            return render(request, 'accounts/forgot_password.html')
+
         from django.contrib.auth.models import User
+        # Find account by email (prevent email enumeration by showing same error on failure)
         user = User.objects.filter(email=email).first()
-        if not user:
-            messages.error(request, "User not found.")
-            return redirect('forgot_password')
+        profile = None
+        if user:
+            profile, _ = Profile.objects.get_or_create(user=user)
             
-        try:
-            validate_password(password, user)
-        except ValidationError as ve:
-            for msg in ve.messages:
-                messages.error(request, msg)
-            return render(request, 'accounts/reset_password.html')
+        from utils.recovery_service import verify_recovery_code, generate_recovery_code, hash_recovery_code
+        # Timing-safe validation
+        if user and profile and verify_recovery_code(recovery_code, profile.recovery_code_hash):
+            # Update password
+            user.set_password(password)
+            user.save()
             
-        # Update password
-        user.set_password(password)
-        user.save()
-        
-        # Clear session reset keys
-        if 'email_otp_reset_email' in request.session: del request.session['email_otp_reset_email']
-        if 'email_password_reset_allowed' in request.session: del request.session['email_password_reset_allowed']
-        request.session.modified = True
-        
-        # Set Profile email_verified to True if it wasn't already
-        profile, _ = Profile.objects.get_or_create(user=user)
-        if not profile.email_verified:
-            profile.email_verified = True
+            # Generate new recovery code
+            new_plain_code = generate_recovery_code()
+            profile.recovery_code_hash = hash_recovery_code(new_plain_code)
+            from django.utils import timezone
+            profile.last_regenerated = timezone.now()
             profile.save()
             
-        messages.success(request, "Your password has been reset successfully. Please login with your new credentials.")
+            # Save in session for one-time success display
+            request.session['new_recovery_code'] = new_plain_code
+            request.session.modified = True
+            
+            messages.success(request, "Your password has been successfully reset! Please save your new recovery code.")
+            return redirect('forgot_password_success')
+        else:
+            messages.error(request, "Invalid email address or recovery code.")
+            return render(request, 'accounts/forgot_password.html')
+            
+    return render(request, 'accounts/forgot_password.html')
+
+
+def forgot_password_success(request):
+    new_plain_code = request.session.pop('new_recovery_code', None)
+    if not new_plain_code:
+        messages.error(request, "No pending recovery code to display.")
         return redirect('login')
-        
-    return render(request, 'accounts/reset_password.html')
+    return render(request, 'accounts/forgot_password_success.html', {'recovery_code': new_plain_code})
+
 
 
 
@@ -529,11 +448,9 @@ def logout_view(request):
 
 
 from django.contrib.auth import update_session_auth_hash
-from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from accounts.models import Badge, UserBadge
-from utils.email_otp_service import generate_otp, send_otp_email, verify_otp
 from django.contrib.auth.models import User
 
 @login_required
@@ -547,9 +464,8 @@ def account_settings(request):
     # Handle forms
     profile_form = ProfileForm(instance=profile)
     
-    # Track OTP input display state
-    show_otp_input = False
-    otp_purpose = None
+    # Get newly regenerated recovery code if available (popped so it only shows once)
+    new_recovery_code = request.session.pop('new_recovery_code_settings', None)
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -575,35 +491,38 @@ def account_settings(request):
             else:
                 request.user.email = new_email
                 request.user.save()
-                profile.email_verified = False
-                profile.save()
-                update_user_badges(request.user)
-                messages.success(request, f"Email address updated to {new_email}. Please verify your new email.")
-                return redirect('account_settings')
-                
-        elif action == 'send_verify_otp':
-            otp_code = generate_otp()
-            if send_otp_email(request.user.email, otp_code, purpose='email_verification'):
-                show_otp_input = True
-                otp_purpose = 'email_verification'
-                messages.info(request, f"A verification code has been sent to {request.user.email}. (Please check your spam/junk folder if you do not see it in your inbox).")
-            else:
-                messages.error(request, "Failed to send verification email. Please check your SMTP settings or try again later.")
-            
-        elif action == 'verify_email_otp':
-            code = request.POST.get('otp', '').strip()
-            is_valid, msg = verify_otp(request.user.email, code, purpose='email_verification')
-            if is_valid:
                 profile.email_verified = True
                 profile.save()
                 update_user_badges(request.user)
-                messages.success(request, "Your email has been verified successfully!")
+                messages.success(request, f"Email address updated to {new_email} successfully.")
+                return redirect('account_settings')
+                
+        elif action == 'regenerate_recovery_code':
+            confirm_password = request.POST.get('confirm_password', '').strip()
+            if not confirm_password:
+                messages.error(request, "Password confirmation is required to regenerate your recovery code.")
+                return redirect('account_settings')
+                
+            if request.user.check_password(confirm_password):
+                from utils.recovery_service import generate_recovery_code, hash_recovery_code
+                from django.utils import timezone
+                
+                # Generate new code
+                new_code = generate_recovery_code()
+                profile.recovery_code_hash = hash_recovery_code(new_code)
+                profile.last_regenerated = timezone.now()
+                profile.save()
+                
+                # Store in session to display once on settings page load
+                request.session['new_recovery_code_settings'] = new_code
+                request.session.modified = True
+                
+                messages.success(request, "Your recovery code has been regenerated successfully!")
                 return redirect('account_settings')
             else:
-                messages.error(request, msg)
-                show_otp_input = True
-                otp_purpose = 'email_verification'
-                
+                messages.error(request, "Incorrect password. Recovery code regeneration failed.")
+                return redirect('account_settings')
+            
         elif action == 'save_preferences':
             request.session['notifications_enabled'] = request.POST.get('notifications') == 'on'
             request.session['privacy_mode'] = request.POST.get('privacy') == 'on'
@@ -615,8 +534,7 @@ def account_settings(request):
         'profile_form': profile_form,
         'notifications_enabled': notifications_enabled,
         'privacy_mode': privacy_mode,
-        'show_otp_input': show_otp_input,
-        'otp_purpose': otp_purpose,
+        'new_recovery_code': new_recovery_code,
     }
     return render(request, 'accounts/settings.html', context)
 
@@ -646,31 +564,13 @@ def change_password_ajax(request):
         if not user.check_password(current_password):
             return JsonResponse({'status': 'error', 'message': 'Incorrect current password.'})
         
-        # Send OTP
-        otp_code = generate_otp()
-        if send_otp_email(user.email, otp_code, purpose='password_change'):
-            request.session['password_change_step1_passed'] = True
-            request.session.modified = True
-            return JsonResponse({'status': 'success', 'message': 'Password verified. OTP code sent.'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Failed to send verification email. Please check your SMTP settings or try again later.'})
-        
+        request.session['password_change_step1_passed'] = True
+        request.session.modified = True
+        return JsonResponse({'status': 'success', 'message': 'Password verified. You may now choose a new password.'})
+            
     elif step == 2:
         if not request.session.get('password_change_step1_passed'):
             return JsonResponse({'status': 'error', 'message': 'Unauthorized. Please complete Step 1 first.'})
-            
-        otp_code = data.get('otp', '').strip()
-        is_valid, msg = verify_otp(user.email, otp_code, purpose='password_change')
-        if is_valid:
-            request.session['password_change_otp_verified'] = True
-            request.session.modified = True
-            return JsonResponse({'status': 'success', 'message': 'OTP verified successfully.'})
-        else:
-            return JsonResponse({'status': 'error', 'message': msg})
-            
-    elif step == 3:
-        if not request.session.get('password_change_otp_verified'):
-            return JsonResponse({'status': 'error', 'message': 'Unauthorized. Please complete OTP verification first.'})
             
         new_password = data.get('new_password', '').strip()
         confirm_password = data.get('confirm_password', '').strip()
@@ -701,23 +601,14 @@ def change_password_ajax(request):
         # Keep user authenticated
         update_session_auth_hash(request, user)
         
-        # Send confirmation email
-        send_mail(
-            subject="Password Changed - PortfolioAI",
-            message="Hello,\n\nYour password was successfully changed.\n\nPortfolioAI Team",
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'webmaster@localhost'),
-            recipient_list=[user.email],
-            fail_silently=True
-        )
-        
         # Clear session flags
         if 'password_change_step1_passed' in request.session: del request.session['password_change_step1_passed']
-        if 'password_change_otp_verified' in request.session: del request.session['password_change_otp_verified']
         request.session.modified = True
         
         return JsonResponse({'status': 'success', 'message': 'Password changed successfully.'})
         
     return JsonResponse({'status': 'error', 'message': 'Invalid step value.'})
+
 
 
 from django.http import JsonResponse

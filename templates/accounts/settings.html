@@ -155,32 +155,9 @@
               
               <div class="flex flex-col items-start md:items-end mb-1">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Verification Status</span>
-                {% if profile.email_verified %}
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success/10 text-success border border-success/20 text-xs font-bold">
-                    <i class="bi bi-patch-check-fill"></i> Verified Email
-                  </span>
-                {% else %}
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/10 text-warning border border-warning/20 text-xs font-bold">
-                      <i class="bi bi-exclamation-triangle-fill"></i> Pending Verification
-                    </span>
-                    
-                    {% if show_otp_input %}
-                      <form method="post" action="{% url 'account_settings' %}" class="inline-flex items-stretch rounded-lg shadow-sm">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="verify_email_otp">
-                        <input type="text" name="otp" class="block px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-success focus:border-transparent w-24 mb-0" placeholder="OTP code" required>
-                        <button type="submit" class="inline-flex items-center justify-center px-3 bg-success hover:bg-success-dark text-white rounded-r-lg text-xs font-bold transition-colors">Verify</button>
-                      </form>
-                    {% else %}
-                      <form method="post" action="{% url 'account_settings' %}" class="inline-block">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="send_verify_otp">
-                        <button type="submit" class="inline-flex items-center justify-center px-4 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Send OTP</button>
-                      </form>
-                    {% endif %}
-                  </div>
-                {% endif %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success/10 text-success border border-success/20 text-xs font-bold">
+                  <i class="bi bi-patch-check-fill"></i> Verified Email
+                </span>
               </div>
             </div>
           </div>
@@ -194,14 +171,12 @@
             <!-- Multi-Step Password wizard progress bar -->
             <div class="space-y-2 mb-6">
               <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-primary h-full progress-bar transition-all duration-300 ease-out" id="wizard-progress" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="bg-primary h-full progress-bar transition-all duration-300 ease-out" id="wizard-progress" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
-              <div class="grid grid-cols-5 text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                <span id="step-label-1" class="text-primary">Step 1: Current</span>
-                <span id="step-label-2">Step 2: OTP Code</span>
-                <span id="step-label-3">Step 3: New Pass</span>
-                <span id="step-label-4">Step 4: Confirm</span>
-                <span id="step-label-5">Step 5: Done</span>
+              <div class="grid grid-cols-3 text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <span id="step-label-1" class="text-primary">Step 1: Current Password</span>
+                <span id="step-label-2">Step 2: New Password</span>
+                <span id="step-label-3">Step 3: Done</span>
               </div>
             </div>
 
@@ -215,24 +190,14 @@
               <div id="wizard-step-1" class="wizard-step space-y-3">
                 <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 1: Enter Current Password</h3>
                 <div class="max-w-md">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Password Credentials</label>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Current Password</label>
                   <input type="password" id="current_password" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all mb-0" placeholder="••••••••">
                 </div>
               </div>
 
-              <!-- Step 2: Email OTP -->
+              <!-- Step 2: New Password -->
               <div id="wizard-step-2" class="wizard-step hidden space-y-3">
-                <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 2: Verify Email OTP</h3>
-                <p class="text-[11px] text-slate-550 leading-relaxed">We've sent a 6-digit confirmation code to your email. Enter it below to unlock the password reset fields.</p>
-                <div class="max-w-md">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">OTP Code</label>
-                  <input type="text" id="password_otp" class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all mb-0" placeholder="e.g. 123456">
-                </div>
-              </div>
-
-              <!-- Step 3 & 4: New Password & Confirmation -->
-              <div id="wizard-step-3" class="wizard-step hidden space-y-3">
-                <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 3 & 4: Enter New Password</h3>
+                <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 2: Enter New Password</h3>
                 <div class="grid grid-cols-1 gap-3 max-w-md">
                   <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">New Password</label>
@@ -245,11 +210,11 @@
                 </div>
               </div>
 
-              <!-- Step 5: Success Done -->
-              <div id="wizard-step-5" class="wizard-step hidden text-center py-4 space-y-2">
+              <!-- Step 3: Success Done -->
+              <div id="wizard-step-3" class="wizard-step hidden text-center py-4 space-y-2">
                 <div class="text-success text-3xl"><i class="bi bi-check-circle-fill"></i></div>
-                <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 5: Password Changed Successfully!</h3>
-                <p class="text-[11px] text-slate-500 max-w-sm mx-auto">Your account password has been updated. A confirmation message has been dispatched to your email.</p>
+                <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Step 3: Password Changed Successfully!</h3>
+                <p class="text-[11px] text-slate-550 max-w-sm mx-auto">Your account password has been updated successfully.</p>
               </div>
 
             </div>
@@ -261,6 +226,45 @@
             </div>
 
           </div>
+
+          <!-- Recovery Code Settings -->
+          <div class="glass-card bg-white/70 border border-slate-200/80 p-6 rounded-card shadow-sm mt-6">
+            <h2 class="text-sm font-bold text-slate-800 pb-2 border-b border-slate-200/60 mb-5 flex items-center gap-2">
+              <i class="bi bi-key text-primary"></i> Account Recovery Code
+            </h2>
+            
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+              Your recovery code can be used to reset your password if you lose access to your account.
+              Make sure to keep it secure.
+            </p>
+
+            {% if new_recovery_code %}
+              <div class="alert alert-warning border-0 bg-warning-soft text-warning-dark mb-4 py-3 text-center small animate-pulse" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>IMPORTANT:</strong> This regenerated code will only be shown once. Please save it securely now!
+              </div>
+              <div class="mb-4">
+                <div class="p-3 bg-light rounded-3 text-center font-monospace fs-4 fw-bold text-primary border border-2 border-primary-soft shadow-inner position-relative select-all" id="newRecoveryCodeDisplay">
+                  {{ new_recovery_code }}
+                </div>
+              </div>
+              <div class="row g-2 mb-4 max-w-xs mx-auto">
+                <div class="col-4">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2 text-[11px]" id="copyBtn">Copy</button>
+                </div>
+                <div class="col-4">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2 text-[11px]" id="downloadBtn">Download</button>
+                </div>
+                <div class="col-4">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2 text-[11px]" id="printBtn">Print</button>
+                </div>
+              </div>
+            {% endif %}
+
+            <button type="button" class="btn btn-danger btn-sm px-4 py-2.5 shadow-sm text-xs font-bold" onclick="showRegenerateModal()">
+              <i class="bi bi-arrow-repeat me-1.5"></i>Regenerate Recovery Code
+            </button>
+          </div>
+
         </div>
 
         <!-- Tab 3: Preferences & Privacy -->
@@ -281,7 +285,7 @@
                     <input class="w-9 h-5 rounded-full bg-slate-200 appearance-none cursor-pointer relative checked:bg-primary transition-colors focus:outline-none after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:w-4 after:h-4 after:rounded-full after:bg-white after:transition-all after:shadow checked:after:translate-x-4" type="checkbox" name="notifications" id="notif-switch" {% if notifications_enabled %}checked{% endif %}>
                   </div>
                   <div>
-                    <label class="block text-xs font-bold text-slate-800 mb-0.5 cursor-pointer" for="notif-switch">Enable Email Notifications</label>
+                    <label class="block text-xs font-bold text-slate-800 mb-0.5 cursor-pointer" for="notif-switch">Enable Alerts</label>
                     <p class="text-[10px] text-slate-400 leading-normal">Receive alerts whenever credentials are updated, passwords are reset, or achievements are automatically unlocked.</p>
                   </div>
                 </div>
@@ -311,10 +315,50 @@
     </div>
   </div>
 </div>
+
+<!-- Regenerate Recovery Code Modal (Vanilla CSS/JS overlay) -->
+<div id="regenerateRecoveryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 max-w-md w-full overflow-hidden animate-fade-in">
+    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="text-sm font-extrabold text-slate-850 flex items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill text-danger"></i> Regenerate Recovery Code
+      </h3>
+      <button type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none" onclick="closeRegenerateModal()">
+        <i class="bi bi-x-lg text-xs"></i>
+      </button>
+    </div>
+    <form method="post" action="{% url 'account_settings' %}" class="p-6 space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="regenerate_recovery_code">
+      
+      <p class="text-xs text-slate-500 leading-relaxed">
+        <strong>Warning:</strong> Regenerating your recovery code will permanently invalidate your old recovery code. You must save the new recovery code immediately.
+      </p>
+      
+      <div>
+        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" for="confirm_password_reg">Confirm Your Password</label>
+        <input type="password" name="confirm_password" id="confirm_password_reg" class="block w-full px-3 py-2 text-sm text-slate-905 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter your current password" required>
+      </div>
+      
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-semibold" onclick="closeRegenerateModal()">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-danger hover:bg-danger-dark text-white rounded-lg text-xs font-bold shadow-sm">Regenerate</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+  // Modal visibility functions
+  function showRegenerateModal() {
+    document.getElementById("regenerateRecoveryModal").classList.remove("hidden");
+  }
+  function closeRegenerateModal() {
+    document.getElementById("regenerateRecoveryModal").classList.add("hidden");
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     // ----------------------------------------------------
     // Tab switching system redesign (Vanilla JS)
@@ -373,7 +417,7 @@
     // Step-by-Step Change Password Wizard logic
     // ----------------------------------------------------
     let currentStep = 1;
-    const progressPercent = { 1: 20, 2: 40, 3: 75, 5: 100 };
+    const progressPercent = { 1: 33, 2: 66, 3: 100 };
     
     const nextBtn = document.getElementById('wizard-next-btn');
     const prevBtn = document.getElementById('wizard-prev-btn');
@@ -399,13 +443,13 @@
       progressBar.setAttribute('aria-valuenow', progressPercent[currentStep]);
       
       // Update label highlight colors
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= 3; i++) {
         const label = document.getElementById(`step-label-${i}`);
         if (label) {
           if (i === currentStep) {
             label.className = 'text-primary font-bold';
           } else if (i < currentStep) {
-            label.className = 'text-success-dark font-bold';
+            label.className = 'text-success font-bold';
           } else {
             label.className = 'text-slate-400 font-bold';
           }
@@ -425,12 +469,8 @@
       } else if (currentStep === 2) {
         prevBtn.classList.remove('hidden');
         nextBtn.classList.remove('hidden');
-        nextBtn.textContent = 'Verify OTP';
-      } else if (currentStep === 3) {
-        prevBtn.classList.remove('hidden');
-        nextBtn.classList.remove('hidden');
         nextBtn.textContent = 'Save Password';
-      } else if (currentStep === 5) {
+      } else if (currentStep === 3) {
         prevBtn.classList.add('hidden');
         nextBtn.classList.add('hidden');
       }
@@ -474,39 +514,6 @@
         });
         
       } else if (currentStep === 2) {
-        const code = document.getElementById('password_otp').value;
-        if (!code) { showAlert('Please enter the OTP verification code.'); return; }
-        
-        nextBtn.disabled = true;
-        nextBtn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></span> Checking...';
-        
-        fetch("{% url 'change_password_ajax' %}", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-          },
-          body: JSON.stringify({ step: 2, otp: code })
-        })
-        .then(res => res.json())
-        .then(data => {
-          nextBtn.disabled = false;
-          nextBtn.innerHTML = 'Verify OTP';
-          if (data.status === 'success') {
-            currentStep = 3;
-            updateProgressUI();
-            showAlert(data.message, true);
-          } else {
-            showAlert(data.message);
-          }
-        })
-        .catch(err => {
-          nextBtn.disabled = false;
-          nextBtn.innerHTML = 'Verify OTP';
-          showAlert('Network error. Please try again.');
-        });
-        
-      } else if (currentStep === 3) {
         const newPass = document.getElementById('new_password').value;
         const confPass = document.getElementById('confirm_password').value;
         
@@ -522,14 +529,14 @@
             'Content-Type': 'application/json',
             'X-CSRFToken': '{{ csrf_token }}'
           },
-          body: JSON.stringify({ step: 3, new_password: newPass, confirm_password: confPass })
+          body: JSON.stringify({ step: 2, new_password: newPass, confirm_password: confPass })
         })
         .then(res => res.json())
         .then(data => {
           nextBtn.disabled = false;
           nextBtn.innerHTML = 'Save Password';
           if (data.status === 'success') {
-            currentStep = 5;
+            currentStep = 3;
             updateProgressUI();
             showAlert(data.message, true);
           } else {
@@ -548,11 +555,76 @@
       hideAlert();
       if (currentStep === 2) {
         currentStep = 1;
-      } else if (currentStep === 3) {
-        currentStep = 2;
       }
       updateProgressUI();
     });
+
+    // ----------------------------------------------------
+    // Recovery code actions Copy / Download / Print
+    // ----------------------------------------------------
+    const newRecoveryCode = "{{ new_recovery_code }}";
+    const copyBtn = document.getElementById("copyBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const printBtn = document.getElementById("printBtn");
+
+    if (newRecoveryCode) {
+      // Copy to clipboard
+      copyBtn.addEventListener("click", function() {
+        navigator.clipboard.writeText(newRecoveryCode).then(() => {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.replace("btn-outline-secondary", "btn-success");
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.replace("btn-success", "btn-outline-secondary");
+          }, 2000);
+        });
+      });
+
+      // Download as TXT
+      downloadBtn.addEventListener("click", function() {
+        const element = document.createElement("a");
+        const file = new Blob([
+          "=========================================\n",
+          "PortfolioAI - Password Recovery Code (Regenerated)\n",
+          "=========================================\n\n",
+          "Save this code in a secure location. It will be required if you forget your password.\n\n",
+          "Your Recovery Code: " + newRecoveryCode + "\n\n",
+          "Generated: " + new Date().toISOString() + "\n"
+        ], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = "portfolioai_new_recovery_code.txt";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      });
+
+      // Print
+      printBtn.addEventListener("click", function() {
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>PortfolioAI Recovery Code</title>
+              <style>
+                body { font-family: sans-serif; text-align: center; padding: 50px; }
+                .box { border: 2px dashed #000; padding: 20px; display: inline-block; font-family: monospace; font-size: 24px; font-weight: bold; margin: 20px 0; }
+                .warning { color: red; font-weight: bold; margin-bottom: 20px; }
+              </style>
+            </head>
+            <body>
+              <h2>PortfolioAI Password Recovery Code (Regenerated)</h2>
+              <p class="warning">IMPORTANT: Keep this code secure. Do not share it with anyone.</p>
+              <p>Your unique account recovery code:</p>
+              <div class="box">${newRecoveryCode}</div>
+              <p>Printed on: ${new Date().toLocaleString()}</p>
+              <script>window.print();window.close();<\/script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      });
+    }
   });
 </script>
 {% endblock %}

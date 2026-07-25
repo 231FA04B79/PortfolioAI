@@ -98,7 +98,7 @@ from urllib.parse import urlparse
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 # Use a dummy SQLite database during Vercel's build phase (collectstatic) to avoid psycopg2/DB connection issues
-IS_BUILDING = 'collectstatic' in sys.argv or os.environ.get('VERCEL_BUILD') == '1'
+IS_BUILDING = 'collectstatic' in sys.argv or 'test' in sys.argv or os.environ.get('VERCEL_BUILD') == '1'
 
 database_url = os.environ.get('DATABASE_URL')
 if database_url and not IS_BUILDING:
@@ -199,17 +199,8 @@ SESSION_COOKIE_AGE = 1800  # Expires after 30 minutes of inactivity (in seconds)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep cookie active on close, but enforce the age limit
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh cookie age expiration on every request during activity
 
-# Email Configuration
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-
-EMAIL_BACKEND = 'utils.email_backend.SSLCertBypassEmailBackend'
-EMAIL_TIMEOUT = 10
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'webmaster@localhost'
+# Email configuration has been completely removed to support offline-first Recovery Code password resets
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 
 # Production Security Settings

@@ -124,6 +124,12 @@ class Profile(models.Model):
         related_name='profiles'
     )
 
+    # Recovery Code authentication
+    recovery_code_hash = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    last_regenerated = models.DateTimeField(blank=True, null=True)
+
     @property
     def initials(self):
         if self.full_name:
@@ -136,15 +142,4 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
-
-
-class EmailOTP(models.Model):
-    email = models.EmailField()
-    otp_code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    attempts = models.IntegerField(default=0)
-    purpose = models.CharField(max_length=20) # 'registration' or 'password_reset'
-
-    def __str__(self):
-        return f"OTP for {self.email} ({self.purpose})"
+
